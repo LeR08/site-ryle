@@ -9,52 +9,57 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Route pour scraper un site
 app.post('/api/scrape-site', async (req, res) => {
   const { url } = req.body;
-  if (!url) return res.status(400).json({ error: "URL manquante" });
+  if (!url) return res.status(400).json({ error: 'URL manquante' });
 
+  let parsedUrl;
   try {
-    const outputDir = path.join(__dirname, 'scraped-sites');
-    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
+    parsedUrl = new URL(url);
+  } catch {
+    return res.status(400).json({ error: 'URL invalide' });
+  }
+  if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+    return res.status(400).json({ error: 'Protocole non autorisé' });
+  }
 
-    // ✅ Puppeteer utilise son propre Chromium intégré
-    const browser = await puppeteer.launch({
-  headless: true,
-  executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-  args: ['--no-sandbox', '--disable-setuid-sandbox']
+  const outputDir = path.join(__dirname, 'scraped-sites');
+  fs.mkdirSync(outputDir, { recursive: true });
+
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
 
-    const html = await page.content();
-    const title = await page.title();
-    await browser.close();
+    const [html, title] = await Promise.all([page.content(), page.title()]);
 
-    // Sauvegarde les fichiers
     fs.writeFileSync(path.join(outputDir, 'index.html'), html);
     fs.writeFileSync(
       path.join(outputDir, 'metadata.json'),
-      JSON.stringify({ title, url })
+      JSON.stringify({ title, url }, null, 2)
     );
 
     res.json({
       title,
       url,
       preview: html.substring(0, 500) + '...',
-      files: ['index.html', 'metadata.json']
+      files: ['index.html', 'metadata.json'],
     });
-
   } catch (err) {
-    console.error("Erreur Puppeteer:", err);
+    console.error('Erreur Puppeteer:', err);
     res.status(500).json({ error: err.message });
+  } finally {
+    await browser?.close();
   }
 });
 
