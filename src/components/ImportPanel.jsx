@@ -1,170 +1,237 @@
 import { useRef, useState } from 'react';
 
-export default function ImportPanel({ onLoad }) {
-  const [dragging, setDragging] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const inputRef = useRef(null);
-
-  async function processFiles(fileList) {
-    const files = Array.from(fileList);
-    if (!files.length) return;
-    setProcessing(true);
-    try {
-      await buildSite(files);
-    } finally {
-      setProcessing(false);
+// ── Traverse récursif via FileSystem API ─────────────────────────────────────
+async function readEntry(entry, relBase, out) {
+  if (entry.isFile) {
+    await new Promise(resolve => {
+      entry.file(file => {
+        const relPath = relBase ? `${relBase}/${file.name}` : file.name;
+        out.push({ file, relPath });
+        resolve();
+      }, resolve);
+    });
+  } else if (entry.isDirectory) {
+    const reader = entry.createReader();
+    const newBase = relBase ? `${relBase}/${entry.name}` : entry.name;
+    // readEntries renvoie max 100 items par appel — boucler jusqu'à retour vide
+    while (true) {
+      const batch = await new Promise(resolve =>
+        reader.readEntries(resolve, () => resolve([]))
+      );
+      if (!batch.length) break;
+      await Promise.all(batch.map(e => readEntry(e, newBase, out)));
     }
   }
+}
 
-  async function buildSite(files) {
-    // ── 1. Catégoriser ───────────────────────────────────────────────────────
-    const htmlFiles = [], cssFiles = [], jsFiles = [], assetFiles = [];
-    for (const f of files) {
-      const ext = (f.name.split('.').pop() || '').toLowerCase();
-      if (['html', 'htm'].includes(ext)) htmlFiles.push(f);
-      else if (ext === 'css')            cssFiles.push(f);
-      else if (ext === 'js')             jsFiles.push(f);
-      else                               assetFiles.push(f);
-    }
+async function getDroppedItems(dataTransfer) {
+  const out = [];
+  const items = Array.from(dataTransfer.items);
+  await Promise.all(
+    items.map(item => {
+      const entry = item.webkitGetAsEntry?.();
+      return entry ? readEntry(entry, '', out) : Promise.resolve();
+    })
+  );
+  // Fallback si webkitGetAsEntry indisponible
+  if (!out.length) {
+    Array.from(dataTransfer.files).forEach(f =>
+      out.push({ file: f, relPath: f.webkitRelativePath || f.name })
+    );
+  }
+  return out;
+}
 
-    if (!htmlFiles.length) {
-      alert('Aucun fichier HTML trouvé dans le dossier.');
-      return;
-    }
+// ── Traitement des fichiers ──────────────────────────────────────────────────
+async function buildSite(items, onLoad) {
+  // items = [{ file, relPath }]
+  const htmlItems = [], cssItems = [], jsItems = [], assetItems = [];
 
-    // ── 2. Lire les assets binaires → data URLs ──────────────────────────────
-    const assetMap = new Map();
+  for (const item of items) {
+    const ext = (item.file.name.split('.').pop() || '').toLowerCase();
+    if (['html', 'htm'].includes(ext))  htmlItems.push(item);
+    else if (ext === 'css')             cssItems.push(item);
+    else if (ext === 'js')              jsItems.push(item);
+    else                                assetItems.push(item);
+  }
 
-    await Promise.all(assetFiles.map(file => new Promise(resolve => {
+  if (!htmlItems.length) {
+    alert('Aucun fichier HTML trouvé dans le dossier.');
+    return;
+  }
+
+  // ── 1. Assets → data URLs base64 ──────────────────────────────────────────
+  const assetMap = new Map(); // chemin → dataUrl
+
+  await Promise.all(assetItems.map(({ file, relPath }) =>
+    new Promise(resolve => {
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result;
-        const fullPath = file.webkitRelativePath || file.name;
-        const parts = fullPath.split('/');
-
+        const parts = relPath.split('/');
+        // Indexe toutes les variantes du chemin (du complet au simple nom)
         for (let i = 0; i < parts.length; i++) {
           const sub = parts.slice(i).join('/');
-          const filename = parts[parts.length - 1];
-          [sub, `./${sub}`, `../${sub}`, filename, `./${filename}`].forEach(p => {
-            if (!assetMap.has(p)) assetMap.set(p, dataUrl);
-          });
+          for (const prefix of ['', './', '../']) {
+            const key = prefix + sub;
+            if (!assetMap.has(key)) assetMap.set(key, dataUrl);
+          }
         }
         resolve();
       };
       reader.onerror = resolve;
       reader.readAsDataURL(file);
-    })));
+    })
+  ));
 
-    // Remplace les chemins dans un texte (du plus long au plus court)
-    function replaceAssets(text) {
-      const sorted = [...assetMap.entries()].sort(([a], [b]) => b.length - a.length);
-      let out = text;
-      for (const [p, dataUrl] of sorted) {
-        const esc = p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        out = out.replace(new RegExp(esc, 'g'), dataUrl);
-      }
-      return out;
+  // Remplace les chemins d'assets dans un texte (chemins les plus longs d'abord)
+  const sortedAssets = [...assetMap.entries()].sort(([a], [b]) => b.length - a.length);
+
+  function replaceAssets(text) {
+    let out = text;
+    for (const [p, dataUrl] of sortedAssets) {
+      const esc = p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      out = out.replace(new RegExp(esc, 'g'), dataUrl);
     }
+    return out;
+  }
 
-    // ── 3. Lire et indexer CSS ───────────────────────────────────────────────
-    const cssMap = new Map();
-    await Promise.all(cssFiles.map(async f => {
-      const content = replaceAssets(await f.text());
-      const fullPath = f.webkitRelativePath || f.name;
-      const parts = fullPath.split('/');
-      for (let i = 0; i < parts.length; i++) {
-        const sub = parts.slice(i).join('/');
-        cssMap.set(sub, content);
-        cssMap.set(`./${sub}`, content);
-      }
-    }));
+  // ── 2. CSS → inline après remplacement des assets ─────────────────────────
+  const cssMap = new Map();
 
-    // ── 4. Lire et indexer JS ────────────────────────────────────────────────
-    const jsMap = new Map();
-    await Promise.all(jsFiles.map(async f => {
-      const content = await f.text();
-      const fullPath = f.webkitRelativePath || f.name;
-      const parts = fullPath.split('/');
-      for (let i = 0; i < parts.length; i++) {
-        const sub = parts.slice(i).join('/');
-        jsMap.set(sub, content);
-        jsMap.set(`./${sub}`, content);
-      }
-    }));
-
-    function cleanPath(href) { return href.split('?')[0].split('#')[0].trim(); }
-
-    function findInMap(map, href) {
-      const p = cleanPath(href);
-      return map.get(p) ?? map.get(p.split('/').pop()) ?? null;
+  await Promise.all(cssItems.map(async ({ file, relPath }) => {
+    const content = replaceAssets(await file.text());
+    const parts = relPath.split('/');
+    for (let i = 0; i < parts.length; i++) {
+      const sub = parts.slice(i).join('/');
+      cssMap.set(sub, content);
+      cssMap.set('./' + sub, content);
+      cssMap.set('../' + sub, content);
     }
+  }));
 
-    // ── 5. Traiter le HTML ───────────────────────────────────────────────────
-    let html = await htmlFiles[0].text();
-    const title = htmlFiles[0].name.replace(/\.html?$/i, '');
+  // ── 3. JS → inline ────────────────────────────────────────────────────────
+  const jsMap = new Map();
 
-    // <link rel="stylesheet"> → <style> inline
-    html = html.replace(/<link\b([^>]*)>/gi, (match, attrs) => {
-      if (!/rel=["']stylesheet["']/i.test(attrs)) return match;
-      const m = attrs.match(/href=["']([^"']+)["']/i);
-      if (!m) return match;
-      const css = findInMap(cssMap, m[1]);
-      return css != null ? `<style>${css}</style>` : match;
-    });
+  await Promise.all(jsItems.map(async ({ file, relPath }) => {
+    const content = await file.text();
+    const parts = relPath.split('/');
+    for (let i = 0; i < parts.length; i++) {
+      const sub = parts.slice(i).join('/');
+      jsMap.set(sub, content);
+      jsMap.set('./' + sub, content);
+      jsMap.set('../' + sub, content);
+    }
+  }));
 
-    // <script src="..."></script> → <script> inline
-    html = html.replace(/<script\b([^>]*)><\/script>/gi, (match, attrs) => {
-      const m = attrs.match(/src=["']([^"']+)["']/i);
-      if (!m) return match;
-      const js = findInMap(jsMap, m[1]);
-      return js != null ? `<script>${js}<\/script>` : match;
-    });
+  function cleanHref(href) { return href.split('?')[0].split('#')[0].trim(); }
 
-    // Remplace src="", url() avec data URLs
-    html = html
-      .replace(/\bsrc=["']([^"'#?][^"']*?)["']/gi, (match, src) => {
-        const sorted = [...assetMap.entries()].sort(([a], [b]) => b.length - a.length);
-        for (const [p, dataUrl] of sorted) {
-          if (src === p || src.endsWith('/' + p) || src.endsWith('/' + p.split('/').pop())) {
-            return `src="${dataUrl}"`;
-          }
-        }
-        return match;
-      })
-      .replace(/url\(['"]?([^'")\s]+)['"]?\)/gi, (match, u) => {
-        const sorted = [...assetMap.entries()].sort(([a], [b]) => b.length - a.length);
-        for (const [p, dataUrl] of sorted) {
-          if (u === p || u.endsWith('/' + p) || u.endsWith('/' + p.split('/').pop())) {
-            return `url(${dataUrl})`;
-          }
-        }
-        return match;
-      });
+  function findInMap(map, href) {
+    const p = cleanHref(href);
+    return map.get(p) ?? map.get(p.split('/').pop()) ?? null;
+  }
 
-    onLoad({
-      title,
-      html,
-      files: files.map(f => f.webkitRelativePath || f.name),
-    });
+  // ── 4. Choisir le HTML principal (index.html en priorité) ─────────────────
+  const mainHtmlItem =
+    htmlItems.find(({ file }) => file.name.toLowerCase() === 'index.html') ||
+    htmlItems[0];
+
+  let html = await mainHtmlItem.file.text();
+  const title = mainHtmlItem.file.name.replace(/\.html?$/i, '');
+
+  // <link rel="stylesheet"> → <style> inline
+  html = html.replace(/<link\b([^>]*)>/gi, (match, attrs) => {
+    if (!/rel=["']stylesheet["']/i.test(attrs)) return match;
+    const m = attrs.match(/href=["']([^"']+)["']/i);
+    if (!m) return match;
+    const css = findInMap(cssMap, m[1]);
+    return css != null ? `<style>${css}</style>` : match;
+  });
+
+  // <script src="..."></script> → <script> inline
+  html = html.replace(/<script\b([^>]*)>\s*<\/script>/gi, (match, attrs) => {
+    const m = attrs.match(/src=["']([^"']+)["']/i);
+    if (!m) return match;
+    const js = findInMap(jsMap, m[1]);
+    return js != null ? `<script>${js}<\/script>` : match;
+  });
+
+  // src="..." → data URL
+  html = html.replace(/\bsrc=["']([^"'#][^"']*?)["']/gi, (match, src) => {
+    const clean = cleanHref(src);
+    for (const [p, dataUrl] of sortedAssets) {
+      if (clean === p || clean.endsWith('/' + p) || clean.endsWith('/' + p.split('/').pop())) {
+        return `src="${dataUrl}"`;
+      }
+    }
+    return match;
+  });
+
+  // url(...) dans les styles inline → data URL
+  html = html.replace(/url\(['"]?([^'")\s]+)['"]?\)/gi, (match, u) => {
+    const clean = cleanHref(u);
+    for (const [p, dataUrl] of sortedAssets) {
+      if (clean === p || clean.endsWith('/' + p) || clean.endsWith('/' + p.split('/').pop())) {
+        return `url(${dataUrl})`;
+      }
+    }
+    return match;
+  });
+
+  onLoad({
+    title,
+    html,
+    files: items.map(({ relPath }) => relPath),
+  });
+}
+
+// ── Composant ────────────────────────────────────────────────────────────────
+export default function ImportPanel({ onLoad }) {
+  const [dragging, setDragging]     = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [fileCount, setFileCount]   = useState(null);
+  const inputRef = useRef(null);
+
+  async function process(items) {
+    if (!items.length) return;
+    setFileCount(items.length);
+    setProcessing(true);
+    try {
+      await buildSite(items, onLoad);
+    } catch (err) {
+      alert(`Erreur lors du traitement : ${err.message}`);
+    } finally {
+      setProcessing(false);
+      setFileCount(null);
+    }
   }
 
   function handleChange(e) {
-    processFiles(e.target.files);
+    const items = Array.from(e.target.files).map(file => ({
+      file,
+      relPath: file.webkitRelativePath || file.name,
+    }));
     e.target.value = '';
+    process(items);
   }
 
-  function handleDrop(e) {
+  async function handleDrop(e) {
     e.preventDefault();
     setDragging(false);
-    processFiles(e.dataTransfer.files);
+    if (processing) return;
+    const items = await getDroppedItems(e.dataTransfer);
+    process(items);
   }
 
   return (
     <div className="import-card">
       <div>
         <p className="import-title">Importer un site local</p>
-        <p className="import-sub">Glissez un dossier HTML+CSS+JS ou cliquez pour parcourir</p>
+        <p className="import-sub">
+          Glissez votre dossier complet (sous-dossiers inclus) ou cliquez pour parcourir
+        </p>
       </div>
+
       <div
         className={`drop-zone${dragging ? ' dragging' : ''}${processing ? ' processing' : ''}`}
         onClick={() => !processing && inputRef.current?.click()}
@@ -175,13 +242,21 @@ export default function ImportPanel({ onLoad }) {
         {processing ? (
           <>
             <div className="spinner" />
-            <span className="drop-text">Traitement des fichiers…</span>
+            <span className="drop-text">
+              Traitement{fileCount ? ` de ${fileCount} fichiers` : ''}…
+            </span>
+            <span className="drop-hint">CSS, JS et images en cours d'intégration</span>
           </>
         ) : (
           <>
             <span className="drop-icon">📁</span>
-            <span className="drop-text">Glissez un dossier ici ou <u>cliquez pour parcourir</u></span>
-            <span className="drop-hint">HTML · CSS · JS · Images · Fonts</span>
+            <span className="drop-text">
+              Glissez votre dossier ici ou <u>cliquez pour parcourir</u>
+            </span>
+            <span className="drop-hint">
+              Tous les sous-dossiers sont inclus automatiquement<br />
+              HTML · CSS · JS · Images · Fonts · SVG
+            </span>
           </>
         )}
         <input
