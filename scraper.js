@@ -2,25 +2,21 @@ import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
 
-const url = 'https://example.com';
-const outputDir = './mon-site-importé';
+const TARGET_URL = process.argv[2] || 'https://example.com';
+const OUTPUT_DIR = process.argv[3] || './scraped-output';
 
 async function scrapeSite(targetUrl, outputFolder) {
-  let parsedUrl;
   try {
-    parsedUrl = new URL(targetUrl);
+    new URL(targetUrl);
   } catch {
     throw new Error(`URL invalide : ${targetUrl}`);
-  }
-  if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-    throw new Error('Protocole non autorisé');
   }
 
   const fullPath = path.resolve(outputFolder);
   fs.mkdirSync(fullPath, { recursive: true });
-  console.log(`📁 Dossier prêt : ${fullPath}`);
 
-  console.log(`🚀 Démarrage du scraping : ${targetUrl}`);
+  console.log(`🚀 Scraping : ${targetUrl}`);
+
   let browser;
   try {
     browser = await puppeteer.launch({
@@ -29,29 +25,32 @@ async function scrapeSite(targetUrl, outputFolder) {
     });
 
     const page = await browser.newPage();
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36'
+    );
     await page.goto(targetUrl, { waitUntil: 'networkidle2', timeout: 30000 });
 
     const [html, title] = await Promise.all([page.content(), page.title()]);
+    const scrapedAt = new Date().toISOString();
 
     fs.writeFileSync(path.join(fullPath, 'index.html'), html, 'utf-8');
-    console.log('✅ HTML sauvegardé');
-
-    const metadata = { title, url: targetUrl, scrapedAt: new Date().toISOString() };
     fs.writeFileSync(
       path.join(fullPath, 'metadata.json'),
-      JSON.stringify(metadata, null, 2),
+      JSON.stringify({ title, url: targetUrl, scrapedAt }, null, 2),
       'utf-8'
     );
-    console.log('✅ Métadonnées sauvegardées');
 
-    console.log(`🎉 Scraping terminé ! Fichiers dans : ${fullPath}`);
-    return metadata;
-  } catch (err) {
-    console.error('❌ Erreur pendant le scraping :', err.message);
-    throw err;
+    console.log(`✅ Titre    : ${title}`);
+    console.log(`✅ HTML     : ${(html.length / 1024).toFixed(1)} Ko`);
+    console.log(`📁 Sortie  : ${fullPath}`);
+
+    return { title, url: targetUrl, scrapedAt };
   } finally {
     await browser?.close();
   }
 }
 
-scrapeSite(url, outputDir);
+scrapeSite(TARGET_URL, OUTPUT_DIR).catch(err => {
+  console.error('❌', err.message);
+  process.exit(1);
+});

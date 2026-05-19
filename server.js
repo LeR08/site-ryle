@@ -14,19 +14,22 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+function validateUrl(raw) {
+  try {
+    const u = new URL(raw);
+    if (!['http:', 'https:'].includes(u.protocol)) throw new Error();
+    return u.href;
+  } catch {
+    return null;
+  }
+}
+
 app.post('/api/scrape-site', async (req, res) => {
   const { url } = req.body;
   if (!url) return res.status(400).json({ error: 'URL manquante' });
 
-  let parsedUrl;
-  try {
-    parsedUrl = new URL(url);
-  } catch {
-    return res.status(400).json({ error: 'URL invalide' });
-  }
-  if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-    return res.status(400).json({ error: 'Protocole non autorisé' });
-  }
+  const safeUrl = validateUrl(url);
+  if (!safeUrl) return res.status(400).json({ error: 'URL invalide (http/https uniquement)' });
 
   const outputDir = path.join(__dirname, 'scraped-sites');
   fs.mkdirSync(outputDir, { recursive: true });
@@ -39,24 +42,25 @@ app.post('/api/scrape-site', async (req, res) => {
     });
 
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36'
+    );
+    await page.goto(safeUrl, { waitUntil: 'networkidle2', timeout: 30000 });
 
     const [html, title] = await Promise.all([page.content(), page.title()]);
+    const scrapedAt = new Date().toISOString();
 
-    fs.writeFileSync(path.join(outputDir, 'index.html'), html);
+    const metadata = { title, url: safeUrl, scrapedAt };
+    fs.writeFileSync(path.join(outputDir, 'index.html'), html, 'utf-8');
     fs.writeFileSync(
       path.join(outputDir, 'metadata.json'),
-      JSON.stringify({ title, url }, null, 2)
+      JSON.stringify(metadata, null, 2),
+      'utf-8'
     );
 
-    res.json({
-      title,
-      url,
-      preview: html.substring(0, 500) + '...',
-      files: ['index.html', 'metadata.json'],
-    });
+    res.json({ title, url: safeUrl, html, scrapedAt, files: ['index.html', 'metadata.json'] });
   } catch (err) {
-    console.error('Erreur Puppeteer:', err);
+    console.error('Erreur scraping:', err.message);
     res.status(500).json({ error: err.message });
   } finally {
     await browser?.close();
