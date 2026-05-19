@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import UrlForm from './components/UrlForm';
-import FolderImport from './components/FolderImport';
-import ResultPanel from './components/ResultPanel';
+import UrlForm from './components/UrlForm.jsx';
+import FolderImport from './components/FolderImport.jsx';
+import ResultPanel from './components/ResultPanel.jsx';
 
 export default function App() {
   const [result, setResult] = useState(null);
@@ -43,14 +43,14 @@ export default function App() {
       <main className="main">
         <div className="panels">
           <section className="panel">
-            <h2 className="panel-title">📁 Importer un dossier</h2>
+            <p className="panel-title">📁 Importer un dossier</p>
             <FolderImport onResult={handleFolder} />
           </section>
 
           <div className="divider"><span>ou</span></div>
 
           <section className="panel">
-            <h2 className="panel-title">🌍 Scraper un site</h2>
+            <p className="panel-title">🌍 Scraper un site</p>
             <UrlForm onScrape={handleScrape} loading={loading} />
           </section>
         </div>

@@ -2,6 +2,7 @@ import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
 
+// Usage: node scraper.js <url> [dossier-sortie]
 const TARGET_URL = process.argv[2] || 'https://example.com';
 const OUTPUT_DIR = process.argv[3] || './scraped-output';
 
@@ -15,7 +16,7 @@ async function scrapeSite(targetUrl, outputFolder) {
   const fullPath = path.resolve(outputFolder);
   fs.mkdirSync(fullPath, { recursive: true });
 
-  console.log(`🚀 Scraping : ${targetUrl}`);
+  console.log(`Scraping : ${targetUrl}`);
 
   let browser;
   try {
@@ -40,9 +41,9 @@ async function scrapeSite(targetUrl, outputFolder) {
       'utf-8'
     );
 
-    console.log(`✅ Titre    : ${title}`);
-    console.log(`✅ HTML     : ${(html.length / 1024).toFixed(1)} Ko`);
-    console.log(`📁 Sortie  : ${fullPath}`);
+    console.log(`Titre   : ${title}`);
+    console.log(`Taille  : ${(html.length / 1024).toFixed(1)} Ko`);
+    console.log(`Sortie  : ${fullPath}`);
 
     return { title, url: targetUrl, scrapedAt };
   } finally {
@@ -51,6 +52,6 @@ async function scrapeSite(targetUrl, outputFolder) {
 }
 
 scrapeSite(TARGET_URL, OUTPUT_DIR).catch(err => {
-  console.error('❌', err.message);
+  console.error('Erreur :', err.message);
   process.exit(1);
 });

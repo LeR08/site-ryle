@@ -7,14 +7,11 @@
   --accent-hover: #4f46e5;
   --text: #fafafa;
   --muted: #a1a1aa;
-  --error-bg: rgba(239, 68, 68, 0.1);
-  --error-border: rgba(239, 68, 68, 0.35);
-  --error-text: #fca5a5;
   --radius: 10px;
-  --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
-/* ─── Layout ─── */
+/* ─── App layout ─── */
 
 .app {
   min-height: 100vh;
@@ -60,7 +57,6 @@
 .panels {
   display: flex;
   align-items: stretch;
-  gap: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -76,18 +72,18 @@
 }
 
 .panel-title {
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
 }
 
 .divider {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
+  width: 44px;
   flex-shrink: 0;
   position: relative;
   color: var(--muted);
@@ -97,7 +93,8 @@
 .divider::before {
   content: '';
   position: absolute;
-  top: 0; bottom: 0;
+  top: 0;
+  bottom: 0;
   left: 50%;
   width: 1px;
   background: var(--border);
@@ -113,6 +110,7 @@
 /* ─── FolderImport ─── */
 
 .folder-drop {
+  flex: 1;
   border: 2px dashed var(--border);
   border-radius: var(--radius);
   padding: 2rem 1rem;
@@ -122,6 +120,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
   user-select: none;
 }
@@ -132,25 +131,12 @@
   background: rgba(99, 102, 241, 0.06);
 }
 
-.folder-icon {
-  font-size: 2rem;
-  line-height: 1;
-}
+.folder-icon { font-size: 2rem; line-height: 1; }
 
-.folder-text {
-  font-size: 0.9rem;
-  color: var(--text);
-}
+.folder-text { font-size: 0.875rem; color: var(--text); }
+.folder-text u { color: var(--accent); text-decoration-color: var(--accent); }
 
-.folder-text u {
-  color: var(--accent);
-  text-decoration-color: var(--accent);
-}
-
-.folder-hint {
-  font-size: 0.775rem;
-  color: var(--muted);
-}
+.folder-hint { font-size: 0.775rem; color: var(--muted); }
 
 /* ─── UrlForm ─── */
 
@@ -216,13 +202,13 @@
   border-color: var(--accent);
 }
 
-/* ─── Error ─── */
+/* ─── Error banner ─── */
 
 .error-banner {
-  background: var(--error-bg);
-  border: 1px solid var(--error-border);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.35);
   border-radius: var(--radius);
-  color: var(--error-text);
+  color: #fca5a5;
   padding: 0.875rem 1.25rem;
   font-size: 0.9rem;
   display: flex;
@@ -373,8 +359,22 @@
 
 @media (max-width: 700px) {
   .panels { flex-direction: column; }
-  .divider { width: auto; height: 36px; flex-direction: row; }
-  .divider::before { top: 50%; bottom: auto; left: 0; right: 0; width: auto; height: 1px; }
+
+  .divider {
+    width: auto;
+    height: 36px;
+    flex-direction: row;
+  }
+
+  .divider::before {
+    top: 50%;
+    bottom: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: 1px;
+  }
+
   .url-form { flex-direction: column; }
   .meta-grid { grid-template-columns: 1fr; }
   .meta-card.full { grid-column: 1; }

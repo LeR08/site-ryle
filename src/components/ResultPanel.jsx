@@ -48,7 +48,8 @@ export default function ResultPanel({ result }) {
         <button className="btn btn-ghost" onClick={handleDownload} disabled={downloading}>
           {downloading
             ? <span className="spinner" style={{ borderTopColor: 'var(--accent)' }} />
-            : '↓'}
+            : '↓'
+          }
           {downloading ? 'Génération…' : 'Télécharger ZIP'}
         </button>
       </div>

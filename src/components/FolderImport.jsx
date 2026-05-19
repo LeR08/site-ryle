@@ -1,25 +1,26 @@
 import { useRef, useState } from 'react';
 
 export default function FolderImport({ onResult }) {
-  const [isDragging, setIsDragging] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const inputRef = useRef(null);
 
-  async function processFiles(files) {
+  async function processFiles(fileList) {
+    const files = Array.from(fileList);
     if (!files.length) return;
 
     let html = null;
     let css = '';
     let js = '';
     let title = 'Site importé';
-    const fileNames = [];
+    const names = [];
 
     for (const file of files) {
       const name = file.name.toLowerCase();
-      fileNames.push(file.name);
+      names.push(file.name);
 
       if (name.endsWith('.html') || name.endsWith('.htm')) {
         html = await file.text();
-        title = file.name.replace(/\.html?$/, '');
+        title = file.name.replace(/\.html?$/i, '');
       } else if (name.endsWith('.css')) {
         css += await file.text();
       } else if (name.endsWith('.js')) {
@@ -28,42 +29,41 @@ export default function FolderImport({ onResult }) {
     }
 
     if (!html) {
-      alert('Aucun fichier HTML trouvé dans le dossier.');
+      alert('Aucun fichier HTML trouvé dans le dossier sélectionné.');
       return;
     }
 
     const composed = html
       .replace('</head>', `<style>${css}</style></head>`)
-      .replace('</body>', `<script>${js}</script></body>`);
+      .replace('</body>', `<script>${js}<\/script></body>`);
 
     onResult({
       title,
       url: null,
       html: composed,
       scrapedAt: new Date().toISOString(),
-      files: fileNames,
+      files: names,
     });
   }
 
   function handleChange(e) {
-    processFiles(Array.from(e.target.files));
+    processFiles(e.target.files);
     e.target.value = '';
   }
 
   function handleDrop(e) {
     e.preventDefault();
-    setIsDragging(false);
-    const items = Array.from(e.dataTransfer.files);
-    processFiles(items);
+    setDragging(false);
+    processFiles(e.dataTransfer.files);
   }
 
   return (
     <div
-      className={`folder-drop${isDragging ? ' dragging' : ''}`}
-      onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
-      onDragLeave={() => setIsDragging(false)}
-      onDrop={handleDrop}
+      className={`folder-drop${dragging ? ' dragging' : ''}`}
       onClick={() => inputRef.current?.click()}
+      onDragOver={e => { e.preventDefault(); setDragging(true); }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={handleDrop}
     >
       <span className="folder-icon">📁</span>
       <span className="folder-text">
@@ -73,8 +73,8 @@ export default function FolderImport({ onResult }) {
       <input
         ref={inputRef}
         type="file"
-        webkitdirectory="true"
-        directory="true"
+        webkitdirectory=""
+        directory=""
         multiple
         style={{ display: 'none' }}
         onChange={handleChange}

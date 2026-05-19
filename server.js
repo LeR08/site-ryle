@@ -68,5 +68,5 @@ app.post('/api/scrape-site', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Backend démarré sur http://localhost:${PORT}`);
+  console.log(`Backend démarré sur http://localhost:${PORT}`);
 });

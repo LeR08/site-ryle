@@ -22,7 +22,7 @@ export default function UrlForm({ onScrape, loading }) {
         autoFocus
       />
       <button className="btn" type="submit" disabled={loading || !url.trim()}>
-        {loading ? <span className="spinner" /> : null}
+        {loading && <span className="spinner" />}
         {loading ? 'Scraping…' : 'Scraper'}
       </button>
     </form>
