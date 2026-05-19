@@ -44,7 +44,6 @@ async function getDroppedItems(dataTransfer) {
 
 // ── Traitement des fichiers ──────────────────────────────────────────────────
 async function buildSite(items, onLoad) {
-  // items = [{ file, relPath }]
   const htmlItems = [], cssItems = [], jsItems = [], assetItems = [];
 
   for (const item of items) {
@@ -61,7 +60,7 @@ async function buildSite(items, onLoad) {
   }
 
   // ── 1. Assets → data URLs base64 ──────────────────────────────────────────
-  const assetMap = new Map(); // chemin → dataUrl
+  const assetMap = new Map();
 
   await Promise.all(assetItems.map(({ file, relPath }) =>
     new Promise(resolve => {
@@ -69,10 +68,10 @@ async function buildSite(items, onLoad) {
       reader.onload = () => {
         const dataUrl = reader.result;
         const parts = relPath.split('/');
-        // Indexe toutes les variantes du chemin (du complet au simple nom)
         for (let i = 0; i < parts.length; i++) {
           const sub = parts.slice(i).join('/');
-          for (const prefix of ['', './', '../']) {
+          // Tous les préfixes courants y compris absolu '/' et relatif profond '../../'
+          for (const prefix of ['', './', '../', '../../', '/']) {
             const key = prefix + sub;
             if (!assetMap.has(key)) assetMap.set(key, dataUrl);
           }
@@ -84,29 +83,57 @@ async function buildSite(items, onLoad) {
     })
   ));
 
-  // Remplace les chemins d'assets dans un texte (chemins les plus longs d'abord)
+  // Chemins triés du plus long au plus court pour éviter les correspondances partielles
   const sortedAssets = [...assetMap.entries()].sort(([a], [b]) => b.length - a.length);
 
-  function replaceAssets(text) {
-    let out = text;
+  // Remplace les url() dans du CSS/HTML de façon ciblée (évite les remplacements partiels)
+  function replaceUrlRefs(text) {
+    return text.replace(/url\(\s*(['"]?)([^'")]+)\1\s*\)/gi, (match, q, raw) => {
+      const clean = raw.trim().split('?')[0].split('#')[0];
+      if (clean.startsWith('data:')) return match;
+      for (const [p, dataUrl] of sortedAssets) {
+        if (clean === p || clean.endsWith('/' + p)) return `url(${dataUrl})`;
+      }
+      // Correspondance par nom de fichier seul (si l'URL est externe, on ne touche pas)
+      if (!clean.startsWith('http://') && !clean.startsWith('https://') && !clean.startsWith('//')) {
+        const fname = clean.split('/').pop();
+        for (const [p, dataUrl] of sortedAssets) {
+          if (p.split('/').pop() === fname) return `url(${dataUrl})`;
+        }
+      }
+      return match;
+    });
+  }
+
+  function cleanHref(href) { return href.split('?')[0].split('#')[0].trim(); }
+
+  function resolveAsset(raw) {
+    const clean = cleanHref(raw);
+    if (clean.startsWith('data:') || clean.startsWith('http://') ||
+        clean.startsWith('https://') || clean.startsWith('//')) return null;
     for (const [p, dataUrl] of sortedAssets) {
-      const esc = p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      out = out.replace(new RegExp(esc, 'g'), dataUrl);
+      if (clean === p || clean.endsWith('/' + p)) return dataUrl;
     }
-    return out;
+    // Dernier recours : correspondance par nom de fichier seul (pas pour URLs externes)
+    const fname = clean.split('/').pop();
+    for (const [p, dataUrl] of sortedAssets) {
+      if (p.split('/').pop() === fname) return dataUrl;
+    }
+    return null;
   }
 
   // ── 2. CSS → inline après remplacement des assets ─────────────────────────
   const cssMap = new Map();
 
   await Promise.all(cssItems.map(async ({ file, relPath }) => {
-    const content = replaceAssets(await file.text());
+    const raw = await file.text();
+    const content = replaceUrlRefs(raw);
     const parts = relPath.split('/');
     for (let i = 0; i < parts.length; i++) {
       const sub = parts.slice(i).join('/');
-      cssMap.set(sub, content);
-      cssMap.set('./' + sub, content);
-      cssMap.set('../' + sub, content);
+      for (const prefix of ['', './', '../', '/']) {
+        cssMap.set(prefix + sub, content);
+      }
     }
   }));
 
@@ -118,17 +145,27 @@ async function buildSite(items, onLoad) {
     const parts = relPath.split('/');
     for (let i = 0; i < parts.length; i++) {
       const sub = parts.slice(i).join('/');
-      jsMap.set(sub, content);
-      jsMap.set('./' + sub, content);
-      jsMap.set('../' + sub, content);
+      for (const prefix of ['', './', '../', '/']) {
+        jsMap.set(prefix + sub, content);
+      }
     }
   }));
 
-  function cleanHref(href) { return href.split('?')[0].split('#')[0].trim(); }
-
   function findInMap(map, href) {
     const p = cleanHref(href);
-    return map.get(p) ?? map.get(p.split('/').pop()) ?? null;
+    // Cherche d'abord le chemin complet, puis sans premier segment, puis nom seul
+    const found = map.get(p);
+    if (found != null) return found;
+    const noLeadingSlash = p.startsWith('/') ? p.slice(1) : null;
+    if (noLeadingSlash) { const f = map.get(noLeadingSlash); if (f != null) return f; }
+    // Correspondance par nom de fichier seul (local uniquement)
+    if (!p.startsWith('http://') && !p.startsWith('https://') && !p.startsWith('//')) {
+      const fname = p.split('/').pop();
+      for (const [k, v] of map) {
+        if (k.split('/').pop() === fname) return v;
+      }
+    }
+    return null;
   }
 
   // ── 4. Choisir le HTML principal (index.html en priorité) ─────────────────
@@ -139,7 +176,7 @@ async function buildSite(items, onLoad) {
   let html = await mainHtmlItem.file.text();
   const title = mainHtmlItem.file.name.replace(/\.html?$/i, '');
 
-  // <link rel="stylesheet"> → <style> inline
+  // ── 5. <link rel="stylesheet"> → <style> inline ───────────────────────────
   html = html.replace(/<link\b([^>]*)>/gi, (match, attrs) => {
     if (!/rel=["']stylesheet["']/i.test(attrs)) return match;
     const m = attrs.match(/href=["']([^"']+)["']/i);
@@ -148,7 +185,7 @@ async function buildSite(items, onLoad) {
     return css != null ? `<style>${css}</style>` : match;
   });
 
-  // <script src="..."></script> → <script> inline
+  // ── 6. <script src="..."> → inline ────────────────────────────────────────
   html = html.replace(/<script\b([^>]*)>\s*<\/script>/gi, (match, attrs) => {
     const m = attrs.match(/src=["']([^"']+)["']/i);
     if (!m) return match;
@@ -156,27 +193,46 @@ async function buildSite(items, onLoad) {
     return js != null ? `<script>${js}<\/script>` : match;
   });
 
-  // src="..." → data URL
-  html = html.replace(/\bsrc=["']([^"'#][^"']*?)["']/gi, (match, src) => {
-    const clean = cleanHref(src);
-    for (const [p, dataUrl] of sortedAssets) {
-      if (clean === p || clean.endsWith('/' + p) || clean.endsWith('/' + p.split('/').pop())) {
-        return `src="${dataUrl}"`;
-      }
-    }
-    return match;
+  // ── 7. @import dans les <style> inline de l'HTML ──────────────────────────
+  html = html.replace(/(<style[^>]*>)([\s\S]*?)(<\/style>)/gi, (_, open, body, close) => {
+    const resolved = body
+      .replace(/@import\s+url\(\s*['"]?([^'")\s]+)['"]?\s*\)/gi, (imp, href) => {
+        const css = findInMap(cssMap, href);
+        return css ? css : imp;
+      })
+      .replace(/@import\s+['"]([^'"]+)['"]/gi, (imp, href) => {
+        const css = findInMap(cssMap, href);
+        return css ? css : imp;
+      });
+    return open + replaceUrlRefs(resolved) + close;
   });
 
-  // url(...) dans les styles inline → data URL
-  html = html.replace(/url\(['"]?([^'")\s]+)['"]?\)/gi, (match, u) => {
-    const clean = cleanHref(u);
-    for (const [p, dataUrl] of sortedAssets) {
-      if (clean === p || clean.endsWith('/' + p) || clean.endsWith('/' + p.split('/').pop())) {
-        return `url(${dataUrl})`;
-      }
-    }
-    return match;
+  // ── 8. src="..." → data URL (img, video, audio, source…) ──────────────────
+  html = html.replace(/\bsrc=["']([^"']+)["']/gi, (match, src) => {
+    const dataUrl = resolveAsset(src);
+    return dataUrl ? `src="${dataUrl}"` : match;
   });
+
+  // ── 9. srcset="..." → data URLs ───────────────────────────────────────────
+  html = html.replace(/\bsrcset=["']([^"']+)["']/gi, (match, srcset) => {
+    const parts = srcset.split(',').map(part => {
+      const [url, ...rest] = part.trim().split(/\s+/);
+      const dataUrl = resolveAsset(url);
+      return dataUrl ? [dataUrl, ...rest].join(' ') : part.trim();
+    });
+    return `srcset="${parts.join(', ')}"`;
+  });
+
+  // ── 10. data-src / data-bg / data-background (lazy loading) ───────────────
+  html = html.replace(/\b(data-src|data-lazysrc|data-original|data-bg|data-background)=["']([^"']+)["']/gi,
+    (match, attr, src) => {
+      const dataUrl = resolveAsset(src);
+      return dataUrl ? `${attr}="${dataUrl}"` : match;
+    }
+  );
+
+  // ── 11. url() dans styles inline restants ─────────────────────────────────
+  html = replaceUrlRefs(html);
 
   onLoad({
     title,
