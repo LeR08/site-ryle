@@ -111,7 +111,7 @@ export default function ResultPanel({ result }) {
           key={previewKey}
           className="preview-iframe"
           srcDoc={htmlContent}
-          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+          sandbox="allow-scripts allow-forms allow-popups"
           title="Aperçu du site"
         />
       )}
