@@ -47,8 +47,8 @@ export default function App() {
 
   // ── Project loading ──────────────────────────────────────────────────────────
 
-  function loadProject({ title, html: initialHtml, files }) {
-    setProject({ title, files });
+  function loadProject({ title, html: initialHtml, files, pathPrefix }) {
+    setProject({ title, files, pathPrefix });
     setHtml(initialHtml);
     setHistory([initialHtml]);
     setHistIdx(0);
@@ -104,18 +104,87 @@ export default function App() {
   // ── Export ───────────────────────────────────────────────────────────────────
 
   async function handleExport() {
-    let exportHtml = html;
+    // 1. Get current HTML (with edits) from iframe
+    let rawHtml = html;
     try {
       const live = await editorRef.current?.getHtml();
-      if (live) exportHtml = live;
-    } catch (e) {
-      // use current html state
+      if (live) rawHtml = live;
+    } catch (e) {}
+
+    // 2. Clean editor artifacts
+    let finalHtml = rawHtml;
+
+    // Remove VFS script
+    finalHtml = finalHtml.replace(/<script\s+data-vfs="1"[^>]*>[\s\S]*?<\/script>/gi, '');
+
+    // Remove editor style block (injected by SCRIPT_BODY)
+    finalHtml = finalHtml.replace(/<style[^>]*>\s*\[data-eid\][\s\S]*?<\/style>/gi, '');
+
+    // Remove eid-sel class
+    finalHtml = finalHtml.replace(/\s*eid-sel/g, '');
+
+    // Remove data-eid attributes
+    finalHtml = finalHtml.replace(/\s+data-eid=["'][^"']*["']/g, '');
+
+    // Unwrap .eid-iw spans: extract the img inside, discard .eid-ib badge
+    finalHtml = finalHtml.replace(
+      /<span[^>]*class="eid-iw"[^>]*>([\s\S]*?)<\/span>/gi,
+      (match, inner) => {
+        const imgMatch = inner.match(/<img\b[^>]*>/i);
+        return imgMatch ? imgMatch[0] : '';
+      }
+    );
+
+    // 3. Restore CSS: <style data-src="path"> → <link rel="stylesheet" href="path">
+    finalHtml = finalHtml.replace(
+      /<style\s+data-src=["']([^"']+)["'][^>]*>[\s\S]*?<\/style>/gi,
+      (match, href) => `<link rel="stylesheet" href="${href}">`
+    );
+
+    // 4. Restore JS: <script data-src="path"> → <script src="path"></script>
+    finalHtml = finalHtml.replace(
+      /<script\s+data-src=["']([^"']+)["'][^>]*>[\s\S]*?<\/script>/gi,
+      (match, src) => `<script src="${src}"><\/script>`
+    );
+
+    // 5. Restore non-replaced images: src="data:..." data-export-src="orig" → src="orig"
+    finalHtml = finalHtml.replace(
+      /src=["']data:[^"']*["']\s+data-export-src=["']([^"']+)["']/gi,
+      (match, originalSrc) => `src="${originalSrc}"`
+    );
+
+    // 6. Remove any leftover data-export-src attrs
+    finalHtml = finalHtml.replace(/\s+data-export-src=["'][^"']*["']/gi, '');
+
+    // 7. Ensure DOCTYPE
+    if (!finalHtml.trimStart().startsWith('<!')) {
+      finalHtml = '<!DOCTYPE html>\n' + finalHtml;
     }
 
+    // 8. Build ZIP with original file structure
     const zip = new JSZip();
-    const slug = (project?.title || 'site').replace(/[^a-z0-9]/gi, '-').toLowerCase();
-    zip.file('index.html', exportHtml);
-    const blob = await zip.generateAsync({ type: 'blob' });
+    const { files = [], pathPrefix = '', title: projTitle } = project;
+
+    // Add all original files (images, CSS, JS, data files, etc.)
+    await Promise.all(
+      files.map(async ({ file, relPath }) => {
+        const zipPath = pathPrefix ? relPath.slice(pathPrefix.length) : relPath;
+        if (!zipPath || zipPath.match(/\.html?$/i)) return; // skip HTML files, replaced by edited version
+        try {
+          const buffer = await file.arrayBuffer();
+          zip.file(zipPath, buffer);
+        } catch (e) {
+          // If arrayBuffer fails, skip this file
+        }
+      })
+    );
+
+    // Add the modified index.html
+    zip.file('index.html', finalHtml);
+
+    // 9. Generate and download
+    const slug = (projTitle || 'site').replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
     saveAs(blob, `${slug}.zip`);
   }
 
