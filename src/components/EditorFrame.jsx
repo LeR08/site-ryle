@@ -70,7 +70,13 @@ const SCRIPT_BODY = `
       if (el) el.innerHTML = d.value;
     } else if (d.type === 'update-img') {
       var w = document.querySelector('[data-eid="' + d.id + '"]');
-      if (w) { var img = w.querySelector('img'); if (img) img.src = d.value; }
+      if (w) {
+        var img = w.querySelector('img');
+        if (img) {
+          img.src = d.value;
+          img.removeAttribute('data-export-src'); // user replaced → don't restore on export
+        }
+      }
     } else if (d.type === 'update-alt') {
       var w = document.querySelector('[data-eid="' + d.id + '"]');
       if (w) { var img = w.querySelector('img'); if (img) img.alt = d.value; }

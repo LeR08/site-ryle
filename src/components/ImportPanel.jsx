@@ -45,6 +45,15 @@ async function getDroppedItems(dataTransfer) {
 // ── Traitement des fichiers ──────────────────────────────────────────────────
 const TEXT_DATA_EXTS = new Set(['json', 'xml', 'txt', 'csv', 'tsv', 'yaml', 'yml', 'geojson', 'svg']);
 
+function getPathPrefix(items) {
+  if (!items.length) return '';
+  const first = items[0].relPath.split('/')[0];
+  if (first && items.every(({ relPath }) => relPath.startsWith(first + '/'))) {
+    return first + '/';
+  }
+  return '';
+}
+
 async function buildSite(items, onLoad) {
   const htmlItems = [], cssItems = [], jsItems = [], binaryItems = [], textDataItems = [];
 
@@ -106,7 +115,7 @@ async function buildSite(items, onLoad) {
   function buildVfsScript() {
     if (!vfsMap.size) return '';
     const entries = JSON.stringify(Object.fromEntries(vfsMap));
-    return `<script>(function(){` +
+    return `<script data-vfs="1">(function(){` +
       `var V=${entries};` +
       `function res(u){var k=String(u).split('?')[0].split('#')[0];` +
       `return V[k]!==undefined?V[k]:V[k.replace(/^\\/+/,'')]!==undefined?V[k.replace(/^\\/+/,'')]:` +
@@ -236,21 +245,21 @@ async function buildSite(items, onLoad) {
     }
   }
 
-  // ── 5. <link rel="stylesheet"> → <style> inline ───────────────────────────
+  // ── 5. <link rel="stylesheet"> → <style data-src="..."> inline ───────────
   html = html.replace(/<link\b([^>]*)>/gi, (match, attrs) => {
     if (!/rel=["']stylesheet["']/i.test(attrs)) return match;
     const m = attrs.match(/href=["']([^"']+)["']/i);
     if (!m) return match;
     const css = findInMap(cssMap, m[1]);
-    return css != null ? `<style>${css}</style>` : match;
+    return css != null ? `<style data-src="${m[1]}">${css}</style>` : match;
   });
 
-  // ── 6. <script src="..."> → inline ────────────────────────────────────────
+  // ── 6. <script src="..."> → <script data-src="..."> inline ───────────────
   html = html.replace(/<script\b([^>]*)>\s*<\/script>/gi, (match, attrs) => {
     const m = attrs.match(/src=["']([^"']+)["']/i);
     if (!m) return match;
     const js = findInMap(jsMap, m[1]);
-    return js != null ? `<script>${js}<\/script>` : match;
+    return js != null ? `<script data-src="${m[1]}">${js}<\/script>` : match;
   });
 
   // ── 7. @import dans les <style> inline de l'HTML ──────────────────────────
@@ -267,8 +276,18 @@ async function buildSite(items, onLoad) {
     return open + replaceUrlRefs(resolved) + close;
   });
 
-  // ── 8. src="..." → data URL (img, video, audio, source…) ──────────────────
+  // ── 8. src="..." sur img → data URL + data-export-src tracking ────────────
+  html = html.replace(/<img\b([^>]*)>/gi, (match, attrs) => {
+    const newAttrs = attrs.replace(/\bsrc=["']([^"']+)["']/i, (m2, src) => {
+      const dataUrl = resolveAsset(src);
+      return dataUrl ? `src="${dataUrl}" data-export-src="${src}"` : m2;
+    });
+    return `<img${newAttrs}>`;
+  });
+
+  // Pour les autres balises (video, audio, source, etc.) — remplacer src sans tracking
   html = html.replace(/\bsrc=["']([^"']+)["']/gi, (match, src) => {
+    if (match.includes('data-export-src')) return match; // déjà traité
     const dataUrl = resolveAsset(src);
     return dataUrl ? `src="${dataUrl}"` : match;
   });
@@ -297,7 +316,8 @@ async function buildSite(items, onLoad) {
   onLoad({
     title,
     html,
-    files: items.map(({ relPath }) => relPath),
+    files: items,
+    pathPrefix: getPathPrefix(items),
   });
 }
 
