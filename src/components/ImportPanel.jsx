@@ -43,16 +43,21 @@ async function getDroppedItems(dataTransfer) {
 }
 
 // ── Traitement des fichiers ──────────────────────────────────────────────────
+const TEXT_DATA_EXTS = new Set(['json', 'xml', 'txt', 'csv', 'tsv', 'yaml', 'yml', 'geojson', 'svg']);
+
 async function buildSite(items, onLoad) {
-  const htmlItems = [], cssItems = [], jsItems = [], assetItems = [];
+  const htmlItems = [], cssItems = [], jsItems = [], binaryItems = [], textDataItems = [];
 
   for (const item of items) {
     const ext = (item.file.name.split('.').pop() || '').toLowerCase();
     if (['html', 'htm'].includes(ext))  htmlItems.push(item);
     else if (ext === 'css')             cssItems.push(item);
     else if (ext === 'js')              jsItems.push(item);
-    else                                assetItems.push(item);
+    else if (TEXT_DATA_EXTS.has(ext))   textDataItems.push(item);
+    else                                binaryItems.push(item);
   }
+  // Alias pour la suite (binaryItems remplace assetItems)
+  const assetItems = binaryItems;
 
   if (!htmlItems.length) {
     alert('Aucun fichier HTML trouvé dans le dossier.');
@@ -82,6 +87,49 @@ async function buildSite(items, onLoad) {
       reader.readAsDataURL(file);
     })
   ));
+
+  // ── 1b. Fichiers texte/JSON → VFS (fetch virtuel) ────────────────────────────
+  const vfsMap = new Map();
+
+  await Promise.all(textDataItems.map(async ({ file, relPath }) => {
+    const content = await file.text();
+    const parts = relPath.split('/');
+    for (let i = 0; i < parts.length; i++) {
+      const sub = parts.slice(i).join('/');
+      for (const prefix of ['', './', '../', '/']) {
+        if (!vfsMap.has(prefix + sub)) vfsMap.set(prefix + sub, content);
+      }
+    }
+  }));
+
+  // Script injecté en tête de HTML pour intercepter fetch() et XHR sur fichiers locaux
+  function buildVfsScript() {
+    if (!vfsMap.size) return '';
+    const entries = JSON.stringify(Object.fromEntries(vfsMap));
+    return `<script>(function(){` +
+      `var V=${entries};` +
+      `function res(u){var k=String(u).split('?')[0].split('#')[0];` +
+      `return V[k]!==undefined?V[k]:V[k.replace(/^\\/+/,'')]!==undefined?V[k.replace(/^\\/+/,'')]:` +
+      `V[k.replace(/^\\.\\/+/,'')]!==undefined?V[k.replace(/^\\.\\/+/,'')]:null;}` +
+      `var _f=window.fetch.bind(window);` +
+      `window.fetch=function(u,o){var d=res(u);if(d!==null){` +
+      `var ct=/\\.json$/i.test(String(u))?'application/json':` +
+      `/\\.xml$/i.test(String(u))?'application/xml':'text/plain';` +
+      `return Promise.resolve(new Response(d,{status:200,headers:{'Content-Type':ct}}));}` +
+      `return _f(u,o);};` +
+      `var _op=XMLHttpRequest.prototype.open,_se=XMLHttpRequest.prototype.send;` +
+      `XMLHttpRequest.prototype.open=function(m,u){this._vd=res(u);this._vu=String(u);` +
+      `if(this._vd===null)return _op.apply(this,arguments);};` +
+      `XMLHttpRequest.prototype.send=function(){if(this._vd===null||this._vd===undefined)` +
+      `return _se.apply(this,arguments);var s=this;` +
+      `setTimeout(function(){try{` +
+      `Object.defineProperty(s,'readyState',{get:function(){return 4},configurable:true});` +
+      `Object.defineProperty(s,'status',{get:function(){return 200},configurable:true});` +
+      `Object.defineProperty(s,'responseText',{get:function(){return s._vd},configurable:true});` +
+      `Object.defineProperty(s,'response',{get:function(){return s._vd},configurable:true});` +
+      `if(s.onreadystatechange)s.onreadystatechange();if(s.onload)s.onload();}catch(e){}},0);};` +
+      `})();<\/script>`;
+  }
 
   // Chemins triés du plus long au plus court pour éviter les correspondances partielles
   const sortedAssets = [...assetMap.entries()].sort(([a], [b]) => b.length - a.length);
@@ -175,6 +223,18 @@ async function buildSite(items, onLoad) {
 
   let html = await mainHtmlItem.file.text();
   const title = mainHtmlItem.file.name.replace(/\.html?$/i, '');
+
+  // ── 4b. Injecter le VFS en tout premier (avant les scripts du site) ────────
+  const vfsScript = buildVfsScript();
+  if (vfsScript) {
+    if (html.includes('<head>')) {
+      html = html.replace('<head>', '<head>' + vfsScript);
+    } else if (html.includes('<head ')) {
+      html = html.replace(/<head\b[^>]*>/, m => m + vfsScript);
+    } else {
+      html = vfsScript + html;
+    }
+  }
 
   // ── 5. <link rel="stylesheet"> → <style> inline ───────────────────────────
   html = html.replace(/<link\b([^>]*)>/gi, (match, attrs) => {
