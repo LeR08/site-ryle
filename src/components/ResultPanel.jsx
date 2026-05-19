@@ -20,13 +20,15 @@ export default function ResultPanel({ result }) {
       zip.file(
         'metadata.json',
         JSON.stringify(
-          { title: result.title, url: result.url, scrapedAt: result.scrapedAt },
+          { title: result.title, url: result.url ?? 'import local', scrapedAt: result.scrapedAt },
           null,
           2
         )
       );
       const blob = await zip.generateAsync({ type: 'blob' });
-      const name = new URL(result.url).hostname.replace(/\./g, '-') + '.zip';
+      const name = result.url
+        ? new URL(result.url).hostname.replace(/\./g, '-') + '.zip'
+        : (result.title || 'site') + '.zip';
       saveAs(blob, name);
     } finally {
       setDownloading(false);
@@ -41,10 +43,12 @@ export default function ResultPanel({ result }) {
       <div className="result-header">
         <div className="result-meta">
           <div className="result-title">{result.title || 'Sans titre'}</div>
-          <div className="result-url">{result.url}</div>
+          <div className="result-url">{result.url ?? 'Import local'}</div>
         </div>
         <button className="btn btn-ghost" onClick={handleDownload} disabled={downloading}>
-          {downloading ? <span className="spinner" style={{ borderTopColor: 'var(--accent)' }} /> : '↓'}
+          {downloading
+            ? <span className="spinner" style={{ borderTopColor: 'var(--accent)' }} />
+            : '↓'}
           {downloading ? 'Génération…' : 'Télécharger ZIP'}
         </button>
       </div>
@@ -85,17 +89,19 @@ export default function ResultPanel({ result }) {
             <div className="meta-card-value">{sizeKb} Ko</div>
           </div>
           <div className="meta-card">
-            <div className="meta-card-label">Scraped le</div>
+            <div className="meta-card-label">Date</div>
             <div className="meta-card-value">{date}</div>
           </div>
           <div className="meta-card">
             <div className="meta-card-label">Fichiers</div>
             <div className="meta-card-value">{result.files.join(', ')}</div>
           </div>
-          <div className="meta-card full">
-            <div className="meta-card-label">URL</div>
-            <div className="meta-card-value">{result.url}</div>
-          </div>
+          {result.url && (
+            <div className="meta-card full">
+              <div className="meta-card-label">URL</div>
+              <div className="meta-card-value">{result.url}</div>
+            </div>
+          )}
         </div>
       )}
     </div>
