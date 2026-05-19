@@ -118,6 +118,7 @@ async function buildSite(items, onLoad) {
     return `<script data-vfs="1">(function(){` +
       `var V=${entries};` +
       `function res(u){var k=String(u).split('?')[0].split('#')[0];` +
+      `try{k=decodeURIComponent(k);}catch(e){}` +
       `return V[k]!==undefined?V[k]:V[k.replace(/^\\/+/,'')]!==undefined?V[k.replace(/^\\/+/,'')]:` +
       `V[k.replace(/^\\.\\/+/,'')]!==undefined?V[k.replace(/^\\.\\/+/,'')]:null;}` +
       `var _f=window.fetch.bind(window);` +
@@ -143,26 +144,36 @@ async function buildSite(items, onLoad) {
   // Chemins triés du plus long au plus court pour éviter les correspondances partielles
   const sortedAssets = [...assetMap.entries()].sort(([a], [b]) => b.length - a.length);
 
-  // Remplace les url() dans du CSS/HTML de façon ciblée (évite les remplacements partiels)
+  // Remplace les url() dans du CSS/HTML de façon ciblée
+  // Gère les 3 formes : url('...') url("...") url(...) — y compris chemins avec espaces
   function replaceUrlRefs(text) {
-    return text.replace(/url\(\s*(['"]?)([^'")]+)\1\s*\)/gi, (match, q, raw) => {
-      const clean = raw.trim().split('?')[0].split('#')[0];
-      if (clean.startsWith('data:')) return match;
-      for (const [p, dataUrl] of sortedAssets) {
-        if (clean === p || clean.endsWith('/' + p)) return `url(${dataUrl})`;
-      }
-      // Correspondance par nom de fichier seul (si l'URL est externe, on ne touche pas)
-      if (!clean.startsWith('http://') && !clean.startsWith('https://') && !clean.startsWith('//')) {
-        const fname = clean.split('/').pop();
+    return text.replace(
+      /url\(\s*(?:(['"])([^'"]*)\1|([^'")(\s][^'")(\s]*))\s*\)/gi,
+      (match, _q, quoted, unquoted) => {
+        const raw = quoted !== undefined ? quoted : (unquoted || '');
+        let clean;
+        try { clean = decodeURIComponent(raw.trim().split('?')[0].split('#')[0]); }
+        catch { clean = raw.trim().split('?')[0].split('#')[0]; }
+        if (!clean || clean.startsWith('data:')) return match;
         for (const [p, dataUrl] of sortedAssets) {
-          if (p.split('/').pop() === fname) return `url(${dataUrl})`;
+          if (clean === p || clean.endsWith('/' + p)) return `url(${dataUrl})`;
         }
+        if (!clean.startsWith('http://') && !clean.startsWith('https://') && !clean.startsWith('//')) {
+          const fname = clean.split('/').pop();
+          for (const [p, dataUrl] of sortedAssets) {
+            if (p.split('/').pop() === fname) return `url(${dataUrl})`;
+          }
+        }
+        return match;
       }
-      return match;
-    });
+    );
   }
 
-  function cleanHref(href) { return href.split('?')[0].split('#')[0].trim(); }
+  function cleanHref(href) {
+    const s = href.split('?')[0].split('#')[0].trim();
+    // Décode %20 etc. pour matcher les noms de fichiers réels
+    try { return decodeURIComponent(s); } catch { return s; }
+  }
 
   function resolveAsset(raw) {
     const clean = cleanHref(raw);
@@ -251,7 +262,7 @@ async function buildSite(items, onLoad) {
     const m = attrs.match(/href=["']([^"']+)["']/i);
     if (!m) return match;
     const css = findInMap(cssMap, m[1]);
-    return css != null ? `<style data-src="${m[1]}">${css}</style>` : match;
+    return css != null ? `<style data-src="${m[1].replace(/"/g, '&quot;')}">${css}</style>` : match;
   });
 
   // ── 6. <script src="..."> → <script data-src="..."> inline ───────────────
@@ -259,7 +270,7 @@ async function buildSite(items, onLoad) {
     const m = attrs.match(/src=["']([^"']+)["']/i);
     if (!m) return match;
     const js = findInMap(jsMap, m[1]);
-    return js != null ? `<script data-src="${m[1]}">${js}<\/script>` : match;
+    return js != null ? `<script data-src="${m[1].replace(/"/g, '&quot;')}">${js}<\/script>` : match;
   });
 
   // ── 7. @import dans les <style> inline de l'HTML ──────────────────────────
@@ -280,7 +291,7 @@ async function buildSite(items, onLoad) {
   html = html.replace(/<img\b([^>]*)>/gi, (match, attrs) => {
     const newAttrs = attrs.replace(/\bsrc=["']([^"']+)["']/i, (m2, src) => {
       const dataUrl = resolveAsset(src);
-      return dataUrl ? `src="${dataUrl}" data-export-src="${src}"` : m2;
+      return dataUrl ? `src="${dataUrl}" data-export-src="${src.replace(/"/g, '&quot;')}"` : m2;
     });
     return `<img${newAttrs}>`;
   });
