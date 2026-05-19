@@ -4,3 +4,4 @@ scraped-sites/
 scraped-output/
 .env
 *.local
+.claude/

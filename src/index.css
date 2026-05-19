@@ -4,11 +4,13 @@
   padding: 0;
 }
 
+html, body, #root {
+  height: 100%;
+}
+
 body {
   background: #0c0c0e;
   color: #fafafa;
   font-family: Inter, system-ui, -apple-system, sans-serif;
-  min-height: 100vh;
-  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
