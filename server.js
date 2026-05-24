@@ -133,6 +133,21 @@ const EMOTION_KEYWORDS = {
       'bonne humeur', 'bonne journée', 'je progresse', 'ça s\'arrange',
       'ça va mieux', 'je réussi', 'satisfait', 'satisfaite'
     ]
+  },
+  addiction: {
+    score: 5, label: 'Addiction / dépendance',
+    words: [
+      'alcool', 'boire beaucoup', 'je bois', 'trop bu', 'trop boire',
+      'dépendance', 'dépendant', 'dépendante', 'addiction', 'addictif',
+      'drogue', 'drogué', 'droguée', 'cannabis', 'cocaïne', 'héroïne',
+      'médicaments en excès', 'somnifères', 'anxiolytiques en excès',
+      'arrêter de boire', 'alcoolique', 'sobre', 'rechute',
+      'je fume trop', 'tabac', 'cigarettes', 'vapote', 'vapotage',
+      'jeux d\'argent', 'jeu compulsif', 'achats compulsifs',
+      'porno', 'réseaux sociaux compulsifs', 'écrans tout le temps',
+      'je mange trop', 'boulimie', 'anorexie', 'purge', 'vomis',
+      'laxatifs', 'troubles alimentaires'
+    ]
   }
 };
 
@@ -273,7 +288,15 @@ const R = {
     anxietyRepeat: `\n\n---\nL'anxiété semble être quelque chose de récurrent pour vous. Un thérapeute — notamment en TCC (thérapie cognitivo-comportementale) — peut vous aider à en trouver les racines et à la gérer durablement. Vous avez peut-être déjà exploré cette option ?`,
     stressWorsening: `\n\n---\nJe remarque que ce niveau de stress semble durer. C'est un signal que votre corps mérite un vrai soutien. Avez-vous pensé à en parler à votre médecin ?`,
     generalProgress: `\n\n---\nComment évaluez-vous votre état aujourd'hui par rapport au début de nos échanges ? Reconnaître les progrès, même petits, est important.`
-  }
+  },
+
+  addiction: [
+    `Merci de me partager ça — il faut du courage pour le reconnaître.\n\nLa consommation excessive est souvent une façon de gérer quelque chose de plus profond : un stress intense, une douleur émotionnelle, un vide. Je ne suis pas là pour vous juger — je suis là pour comprendre.\n\nQu'est-ce que vous pensez que cette consommation vous apporte, au fond ? Qu'est-ce qu'elle anesthésie ou remplace ?`,
+    `Je vous entends. Ce que vous décrivez mérite attention et bienveillance, pas jugement.\n\nLa dépendance — qu'elle soit à l'alcool, aux substances, ou à d'autres comportements — est souvent un signal que quelque chose souffre en vous. Quelque chose qui cherche à être soulagé.\n\nDepuis combien de temps est-ce que c'est ainsi ? Et y a-t-il des moments où c'est pire que d'autres ?`,
+    `Ce que vous partagez demande de l'honnêteté envers soi-même — et ça, c'est déjà un premier pas important.\n\nJe veux vous dire quelque chose : vous n'avez pas à traverser ça seul(e). Des professionnels spécialisés dans l'accompagnement des dépendances existent, sans jugement, avec des solutions concrètes.\n\nAvez-vous déjà essayé de réduire ou d'arrêter ? Comment ça s'est passé ?`,
+    `Je vous entends, et je prends ça au sérieux.\n\nUne chose importante : la dépendance modifie le cerveau d'une façon qui rend le "juste arrêter" très difficile — ce n'est pas une question de volonté. C'est une question de soutien adapté.\n\n**Alcool Info Service : 0 980 980 930** (gratuit, anonyme, 7j/7) peut être un premier contact simple et confidentiel.\n\nQu'est-ce qui vous a amené(e) à consommer autant ?`
+  ],
+
 };
 
 // ── Génération de réponse ─────────────────────────────────────────────────────
@@ -358,6 +381,12 @@ const SUGGESTIONS = {
   positive: [
     { type: 'exercise', text: 'Écrire ce qui a contribué à ce bien-être', icon: '📝' },
     { type: 'exercise', text: 'Pleine conscience 3 minutes', icon: '🧘' }
+  ],
+  addiction: [
+    { type: 'professional', text: 'Consulter un addictologue ou médecin', icon: '👩‍⚕️' },
+    { type: 'emergency', text: 'Alcool Info Service : 0 980 980 930', icon: '📞' },
+    { type: 'action', text: 'Identifier les déclencheurs de la consommation', icon: '📝' },
+    { type: 'professional', text: 'Groupes de soutien (AA, NA, Al-Anon…)', icon: '👥' }
   ],
   neutre: [
     { type: 'exercise', text: 'Journal émotionnel du jour', icon: '📝' },

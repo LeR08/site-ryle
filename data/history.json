@@ -463,5 +463,139 @@
       "riskLevel": 1,
       "timestamp": "2026-05-24T21:39:35.416Z"
     }
+  },
+  {
+    "id": 1779659269678,
+    "timestamp": "2026-05-24T21:47:49.678Z",
+    "userMessage": "je bois beaucoup dalcool en ce moment",
+    "aiResponse": "Parfois mettre des mots sur ce qu'on ressent prend du temps. Prenez celui qu'il vous faut.\n\nQu'est-ce qui vous a amené(e) ici aujourd'hui ?",
+    "emotion": {
+      "dominantEmotion": "neutre",
+      "dominantLabel": "Neutre",
+      "detectedEmotions": [],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:47:49.677Z"
+    }
+  },
+  {
+    "id": 1779659401173,
+    "timestamp": "2026-05-24T21:50:01.173Z",
+    "userMessage": "je bois beaucoup dalcool en ce moment",
+    "aiResponse": "Je vous entends. Ce que vous décrivez mérite attention et bienveillance, pas jugement.\n\nLa dépendance — qu'elle soit à l'alcool, aux substances, ou à d'autres comportements — est souvent un signal que quelque chose souffre en vous. Quelque chose qui cherche à être soulagé.\n\nDepuis combien de temps est-ce que c'est ainsi ? Et y a-t-il des moments où c'est pire que d'autres ?",
+    "emotion": {
+      "dominantEmotion": "addiction",
+      "dominantLabel": "Addiction / dépendance",
+      "detectedEmotions": [
+        {
+          "key": "addiction",
+          "label": "Addiction / dépendance",
+          "score": 5
+        }
+      ],
+      "riskScore": 5,
+      "riskLevel": 2,
+      "timestamp": "2026-05-24T21:50:01.172Z"
+    }
+  },
+  {
+    "id": 1779659401208,
+    "timestamp": "2026-05-24T21:50:01.208Z",
+    "userMessage": "je suis stressé et débordé au boulot",
+    "aiResponse": "Le stress chronique, c'est comme courir sans jamais toucher la ligne d'arrivée. Ça use profondément.\n\nQuestion importante : y a-t-il un moment dans votre journée, même court, où vous vous sentez un peu plus léger(e) ? Identifier ces moments aide à les construire consciemment.\n\nQu'est-ce qui vous a fait le plus de pression cette semaine ?",
+    "emotion": {
+      "dominantEmotion": "stress",
+      "dominantLabel": "Stress",
+      "detectedEmotions": [
+        {
+          "key": "stress",
+          "label": "Stress",
+          "score": 3
+        }
+      ],
+      "riskScore": 3,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:50:01.208Z"
+    }
+  },
+  {
+    "id": 1779659401239,
+    "timestamp": "2026-05-24T21:50:01.239Z",
+    "userMessage": "je suis triste je pleure tout le temps",
+    "aiResponse": "Je suis là. Vous n'avez pas à aller bien si vous n'allez pas bien.\n\nLa tristesse signale souvent quelque chose d'important — une perte, une déception, un manque. Elle mérite attention, pas minimisation.\n\nQu'est-ce qui vous manque en ce moment, au fond ?",
+    "emotion": {
+      "dominantEmotion": "sadness",
+      "dominantLabel": "Tristesse",
+      "detectedEmotions": [
+        {
+          "key": "sadness",
+          "label": "Tristesse",
+          "score": 3
+        }
+      ],
+      "riskScore": 3,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:50:01.239Z"
+    }
+  },
+  {
+    "id": 1779659401269,
+    "timestamp": "2026-05-24T21:50:01.269Z",
+    "userMessage": "je me sens seule personne ne me comprend",
+    "aiResponse": "Ce sentiment d'être invisible, de n'être compris(e) par personne… c'est une vraie douleur. Vous avez eu raison de le dire ici.\n\nParfois, l'isolement vient d'un sentiment de ne pas mériter la connexion — une croyance fausse, mais tenace. Est-ce que ça vous parle ?\n\nIl existe aussi des espaces de soutien collectif — groupes d'écoute, associations — où trouver de la chaleur humaine sans pression.",
+    "emotion": {
+      "dominantEmotion": "isolation",
+      "dominantLabel": "Isolement",
+      "detectedEmotions": [
+        {
+          "key": "isolation",
+          "label": "Isolement",
+          "score": 5
+        }
+      ],
+      "riskScore": 5,
+      "riskLevel": 2,
+      "timestamp": "2026-05-24T21:50:01.269Z"
+    }
+  },
+  {
+    "id": 1779659401299,
+    "timestamp": "2026-05-24T21:50:01.299Z",
+    "userMessage": "jai envie de mourir",
+    "aiResponse": "Bonjour. Je m'appelle **Aria**, je suis votre assistant d'accompagnement psychologique. 🌿\n\nCet espace est le vôtre. Exprimez-vous librement — je suis là pour vous écouter sans vous juger, et vous accompagner du mieux possible.\n\nQu'est-ce qui vous amène aujourd'hui ?",
+    "emotion": {
+      "dominantEmotion": "danger",
+      "dominantLabel": "Danger critique",
+      "detectedEmotions": [
+        {
+          "key": "danger",
+          "label": "Danger critique",
+          "score": 10
+        }
+      ],
+      "riskScore": 10,
+      "riskLevel": 3,
+      "timestamp": "2026-05-24T21:50:01.299Z"
+    }
+  },
+  {
+    "id": 1779659401329,
+    "timestamp": "2026-05-24T21:50:01.329Z",
+    "userMessage": "je me sens mieux bonne humeur",
+    "aiResponse": "Bonjour et bienvenue. Je suis **Aria**. 🌿\n\nMon rôle est simple : vous écouter, vous soutenir, et vous aider à traverser les moments difficiles — comme les moments plus sereins.\n\nComment allez-vous aujourd'hui ?",
+    "emotion": {
+      "dominantEmotion": "positive",
+      "dominantLabel": "Positif",
+      "detectedEmotions": [
+        {
+          "key": "positive",
+          "label": "Positif",
+          "score": -1
+        }
+      ],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:50:01.329Z"
+    }
   }
 ]
