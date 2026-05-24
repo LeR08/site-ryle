@@ -11,11 +11,24 @@ export default function Settings({ showToast }) {
   const [showPrivacy, setShowPrivacy] = useState(false)
   const [showDeleteAll, setShowDeleteAll] = useState(false)
 
+  // API / Groq settings
+  const [groqKey, setGroqKey] = useState('')
+  const [groqSaved, setGroqSaved] = useState(false)
+  const [groqTesting, setGroqTesting] = useState(false)
+
   const load = () => {
     fetch('/api/contacts').then(r => r.json()).then(setContacts).catch(() => {})
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+    fetch('/api/settings')
+      .then(r => r.json())
+      .then(s => {
+        if (s.groqApiKey) setGroqKey(s.groqApiKey)
+      })
+      .catch(() => {})
+  }, [])
 
   const addContact = async () => {
     if (!form.name.trim() || !form.phone.trim()) {
@@ -45,6 +58,47 @@ export default function Settings({ showToast }) {
     await fetch(`/api/contacts/${id}`, { method: 'DELETE' })
     showToast('Contact supprimé', 'info')
     load()
+  }
+
+  const saveGroqKey = async () => {
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groqApiKey: groqKey })
+      })
+      if (!res.ok) throw new Error()
+      setGroqSaved(true)
+      setTimeout(() => setGroqSaved(false), 2500)
+      showToast('Clé API sauvegardée', 'success')
+    } catch {
+      showToast('Erreur lors de la sauvegarde', 'error')
+    }
+  }
+
+  const testGroqKey = async () => {
+    if (!groqKey.trim() || groqKey.startsWith('•')) return showToast('Entrez d\'abord votre clé', 'error')
+    setGroqTesting(true)
+    try {
+      const res = await fetch('/api/settings/test-groq', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: groqKey })
+      })
+      const d = await res.json()
+      if (!res.ok) throw new Error(d.error)
+      showToast(d.message, 'success')
+    } catch (e) {
+      showToast(e.message || 'Connexion échouée', 'error')
+    } finally {
+      setGroqTesting(false)
+    }
+  }
+
+  const removeGroqKey = async () => {
+    await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ groqApiKey: '' }) })
+    setGroqKey('')
+    showToast('Clé supprimée — moteur interne actif', 'info')
   }
 
   const exportData = () => {
@@ -179,6 +233,53 @@ export default function Settings({ showToast }) {
               ))}
             </div>
           )}
+        </section>
+
+        {/* IA avancée Groq */}
+        <section className="settings-section">
+          <h2 className="section-title">🤖 IA avancée (optionnel — gratuit)</h2>
+          <div className="card groq-card">
+            <div className="groq-header">
+              <div>
+                <div className="groq-title">Groq API — Llama 3 gratuit</div>
+                <p className="groq-desc">
+                  Connectez une clé Groq gratuite pour des réponses plus naturelles et contextuelles.
+                  Sans clé, Aria utilise son moteur interne intégré (toujours fonctionnel).
+                </p>
+              </div>
+              {groqKey && (
+                <span className="groq-status-badge">🔑 Configuré</span>
+              )}
+            </div>
+
+            <div className="groq-input-row">
+              <input
+                className="form-input groq-input"
+                type="text"
+                value={groqKey}
+                onChange={e => setGroqKey(e.target.value)}
+                placeholder="gsk_xxxxxxxxxxxxxxxxxxxx"
+              />
+              <button className="btn btn-secondary btn-sm" onClick={testGroqKey} disabled={groqTesting}>
+                {groqTesting ? '…' : '🔌 Tester'}
+              </button>
+              <button className="btn btn-primary btn-sm" onClick={saveGroqKey}>
+                {groqSaved ? '✅' : '💾 Sauver'}
+              </button>
+              {groqKey && (
+                <button className="btn btn-ghost btn-sm" onClick={removeGroqKey} title="Supprimer la clé">
+                  🗑️
+                </button>
+              )}
+            </div>
+
+            <div className="groq-links">
+              <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="groq-link">
+                → Obtenir une clé gratuite sur console.groq.com
+              </a>
+              <span className="groq-note">La clé est stockée localement, jamais partagée avec des tiers.</span>
+            </div>
+          </div>
         </section>
 
         {/* Numéros d'urgence */}

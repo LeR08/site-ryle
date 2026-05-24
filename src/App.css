@@ -140,6 +140,32 @@ a { color: var(--primary); text-decoration: none; }
 .sidebar-emergency {
   padding: 12px;
   border-top: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.btn-discrete-sidebar {
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--bg);
+  color: var(--text-muted);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-discrete-sidebar:hover {
+  background: var(--border-light);
+  color: var(--text);
+  border-style: solid;
 }
 
 .btn-emergency-sidebar {
@@ -358,6 +384,26 @@ a { color: var(--primary); text-decoration: none; }
 .mobile-nav-item .nav-icon { font-size: 20px; }
 .mobile-nav-item.active { color: var(--primary); }
 
+/* ── Mobile discrete FAB ─────────────────────────────────────────────────── */
+.discrete-fab {
+  display: none;
+  position: fixed;
+  bottom: 80px;
+  right: 74px;
+  width: 44px;
+  height: 44px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 50%;
+  font-size: 18px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  z-index: 99;
+  cursor: pointer;
+}
+
 /* ── Mobile emergency FAB ────────────────────────────────────────────────── */
 .emergency-fab {
   display: none;
@@ -407,6 +453,7 @@ a { color: var(--primary); text-decoration: none; }
   .sidebar { display: none; }
   .mobile-nav { display: flex; }
   .emergency-fab { display: flex; }
+  .discrete-fab { display: flex; }
   .app-layout { padding-bottom: 65px; }
   .page-header { padding: 16px 18px; }
   .main-content { overflow-y: auto; }
@@ -472,6 +519,134 @@ a { color: var(--primary); text-decoration: none; }
   font-size: 20px;
   font-weight: 700;
   color: var(--text);
+}
+
+/* ── Mode discret ────────────────────────────────────────────────────────── */
+.discrete-overlay {
+  position: fixed;
+  inset: 0;
+  background: #f5f5f5;
+  z-index: 9999;
+  display: flex;
+  align-items: stretch;
+  animation: fadeIn 0.15s ease;
+}
+
+.discrete-app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #1d1d1f;
+}
+
+.discrete-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ececec;
+  border-bottom: 1px solid #d0d0d0;
+  padding: 8px 16px;
+  height: 48px;
+}
+
+.discrete-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.discrete-toolbar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.discrete-btn {
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid #c0c0c0;
+  background: #fefefe;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+}
+
+.discrete-btn:hover { background: #e8e8e8; }
+
+.discrete-btn-back {
+  background: #d0d0d0;
+  border-color: #b0b0b0;
+  font-size: 12px;
+  color: #555;
+}
+
+.discrete-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.discrete-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: #f0f0f0;
+  border-right: 1px solid #d0d0d0;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.discrete-note-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  margin: 2px 6px;
+}
+
+.discrete-note-item:hover { background: #e0e0e0; }
+.discrete-note-item.active { background: #d8d8d8; }
+
+.discrete-note-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-bottom: 2px;
+}
+
+.discrete-note-preview {
+  font-size: 12px;
+  color: #888;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.discrete-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #fafafa;
+}
+
+.discrete-editor-header {
+  padding: 14px 20px 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1d1d1f;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.discrete-textarea {
+  flex: 1;
+  border: none;
+  background: transparent;
+  resize: none;
+  padding: 16px 20px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #333;
+  outline: none;
+  font-family: inherit;
 }
 
 /* ── Utility ─────────────────────────────────────────────────────────────── */

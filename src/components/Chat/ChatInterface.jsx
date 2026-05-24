@@ -32,12 +32,95 @@ export default function ChatInterface({ onEmergency, showToast }) {
   const [suggestions, setSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [apiError, setApiError] = useState(null)
+
+  // Voice state
+  const [isListening, setIsListening] = useState(false)
+  const [voiceOutput, setVoiceOutput] = useState(() => localStorage.getItem('aria_tts') === 'true')
+  const [voiceSupported, setVoiceSupported] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
+
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
+  const recognitionRef = useRef(null)
+
+  // Init speech recognition
+  useEffect(() => {
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (SpeechRec) {
+      setVoiceSupported(true)
+      const rec = new SpeechRec()
+      rec.lang = 'fr-FR'
+      rec.continuous = false
+      rec.interimResults = false
+      rec.onresult = (e) => {
+        const transcript = e.results[0][0].transcript
+        setInput(prev => prev ? `${prev} ${transcript}` : transcript)
+        setIsListening(false)
+      }
+      rec.onerror = () => setIsListening(false)
+      rec.onend = () => setIsListening(false)
+      recognitionRef.current = rec
+    }
+    return () => {
+      window.speechSynthesis?.cancel()
+      recognitionRef.current?.abort()
+    }
+  }, [])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isLoading])
+
+  const speak = useCallback((text) => {
+    if (!voiceOutput || !window.speechSynthesis) return
+    window.speechSynthesis.cancel()
+    const clean = text
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\n/g, ' ')
+      .replace(/---/g, '')
+    const utt = new SpeechSynthesisUtterance(clean)
+    utt.lang = 'fr-FR'
+    utt.rate = 0.88
+    utt.pitch = 1.05
+    // Prefer a French voice if available
+    const voices = window.speechSynthesis.getVoices()
+    const frVoice = voices.find(v => v.lang.startsWith('fr'))
+    if (frVoice) utt.voice = frVoice
+    utt.onstart = () => setIsSpeaking(true)
+    utt.onend = () => setIsSpeaking(false)
+    utt.onerror = () => setIsSpeaking(false)
+    window.speechSynthesis.speak(utt)
+  }, [voiceOutput])
+
+  const toggleListen = () => {
+    if (!recognitionRef.current) return
+    if (isListening) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+    } else {
+      try {
+        recognitionRef.current.start()
+        setIsListening(true)
+      } catch {
+        setIsListening(false)
+      }
+    }
+  }
+
+  const toggleVoiceOutput = () => {
+    const next = !voiceOutput
+    setVoiceOutput(next)
+    localStorage.setItem('aria_tts', next)
+    if (!next) {
+      window.speechSynthesis?.cancel()
+      setIsSpeaking(false)
+    }
+  }
+
+  const stopSpeaking = () => {
+    window.speechSynthesis?.cancel()
+    setIsSpeaking(false)
+  }
 
   const buildConversationHistory = useCallback(() => {
     return messages
@@ -62,6 +145,7 @@ export default function ChatInterface({ onEmergency, showToast }) {
     setApiError(null)
     setSuggestions([])
     setShowSuggestions(false)
+    window.speechSynthesis?.cancel()
 
     try {
       const res = await fetch('/api/chat', {
@@ -84,7 +168,8 @@ export default function ChatInterface({ onEmergency, showToast }) {
         role: 'assistant',
         content: data.response,
         timestamp: new Date().toISOString(),
-        emotion: data.emotion
+        emotion: data.emotion,
+        usedGroq: data.usedGroq
       }
 
       setMessages(prev => [...prev, aiMsg])
@@ -98,6 +183,9 @@ export default function ChatInterface({ onEmergency, showToast }) {
       if (data.requiresEmergency) {
         setTimeout(() => onEmergency(), 500)
       }
+
+      // Synthèse vocale de la réponse
+      speak(data.response)
     } catch (err) {
       setApiError(err.message)
       const errMsg = {
@@ -112,7 +200,7 @@ export default function ChatInterface({ onEmergency, showToast }) {
       setIsLoading(false)
       inputRef.current?.focus()
     }
-  }, [isLoading, buildConversationHistory, onEmergency])
+  }, [isLoading, buildConversationHistory, onEmergency, speak])
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -127,6 +215,7 @@ export default function ChatInterface({ onEmergency, showToast }) {
     setSuggestions([])
     setShowSuggestions(false)
     setApiError(null)
+    window.speechSynthesis?.cancel()
   }
 
   const formatContent = (text) => {
@@ -162,6 +251,18 @@ export default function ChatInterface({ onEmergency, showToast }) {
               {EMOTION_ICONS[emotionKey] || '😐'} {currentEmotion.dominantLabel}
             </div>
           )}
+
+          {/* TTS toggle */}
+          {window.speechSynthesis && (
+            <button
+              className={`btn btn-ghost btn-sm voice-toggle-btn ${voiceOutput ? 'active' : ''} ${isSpeaking ? 'speaking' : ''}`}
+              onClick={isSpeaking ? stopSpeaking : toggleVoiceOutput}
+              title={isSpeaking ? 'Arrêter la lecture' : voiceOutput ? 'Désactiver la voix' : 'Activer la voix'}
+            >
+              {isSpeaking ? '⏹' : voiceOutput ? '🔊' : '🔇'}
+            </button>
+          )}
+
           <button className="btn btn-ghost btn-sm" onClick={clearConversation} title="Nouvelle conversation">
             🔄
           </button>
@@ -205,6 +306,7 @@ export default function ChatInterface({ onEmergency, showToast }) {
                 <span className="msg-time">
                   {new Date(msg.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                 </span>
+                {msg.usedGroq && <span className="msg-groq-badge" title="Réponse IA avancée">✨</span>}
                 {msg.emotion && msg.emotion.dominantEmotion !== 'neutre' && (
                   <span className="msg-emotion">
                     {EMOTION_ICONS[msg.emotion.dominantEmotion?.toLowerCase()] || ''}
@@ -250,13 +352,23 @@ export default function ChatInterface({ onEmergency, showToast }) {
       {/* Input */}
       <div className="chat-input-area">
         <div className="chat-input-inner">
+          {voiceSupported && (
+            <button
+              className={`mic-btn ${isListening ? 'listening' : ''}`}
+              onClick={toggleListen}
+              title={isListening ? 'Arrêter l\'écoute' : 'Parler à Aria'}
+              disabled={isLoading}
+            >
+              {isListening ? '⏹' : '🎤'}
+            </button>
+          )}
           <textarea
             ref={inputRef}
             className="chat-textarea"
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Écrivez ce que vous ressentez… (Entrée pour envoyer)"
+            placeholder={isListening ? '🎤 Écoute en cours…' : 'Écrivez ce que vous ressentez… (Entrée pour envoyer)'}
             rows={1}
             disabled={isLoading}
           />
@@ -271,6 +383,7 @@ export default function ChatInterface({ onEmergency, showToast }) {
         </div>
         <div className="chat-input-hint">
           Confidentiel · Aria n'est pas un médecin · En cas d'urgence : <strong>15</strong> ou <strong>3114</strong>
+          {voiceSupported && <span className="voice-hint"> · 🎤 Voix disponible</span>}
         </div>
       </div>
     </div>

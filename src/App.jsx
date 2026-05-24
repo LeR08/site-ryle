@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import ChatInterface from './components/Chat/ChatInterface'
 import Dashboard from './components/Dashboard/Dashboard'
 import EmotionalJournal from './components/Journal/EmotionalJournal'
@@ -18,6 +18,20 @@ export default function App() {
   const [page, setPage] = useState('chat')
   const [showEmergency, setShowEmergency] = useState(false)
   const [toasts, setToasts] = useState([])
+  const [isDiscrete, setIsDiscrete] = useState(false)
+
+  // Raccourci clavier : Ctrl+Shift+D → mode discret | Échap → quitter
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+        e.preventDefault()
+        setIsDiscrete(d => !d)
+      }
+      if (e.key === 'Escape') setIsDiscrete(false)
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
 
   const showToast = useCallback((message, type = 'info') => {
     const id = Date.now()
@@ -31,6 +45,11 @@ export default function App() {
     dashboard: <Dashboard />,
     memory: <MemoryPanel showToast={showToast} />,
     settings: <Settings showToast={showToast} />,
+  }
+
+  // Mode discret : remplace l'app par une fausse interface "Notes"
+  if (isDiscrete) {
+    return <DiscreteMode onExit={() => setIsDiscrete(false)} />
   }
 
   return (
@@ -56,6 +75,13 @@ export default function App() {
         </nav>
 
         <div className="sidebar-emergency">
+          <button
+            className="btn-discrete-sidebar"
+            onClick={() => setIsDiscrete(true)}
+            title="Mode discret (Ctrl+Shift+D)"
+          >
+            🫥 Mode discret
+          </button>
           <button className="btn-emergency-sidebar" onClick={() => setShowEmergency(true)}>
             🆘 Urgence
           </button>
@@ -83,7 +109,14 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Mobile emergency FAB */}
+      {/* Mobile discrete + emergency FABs */}
+      <button
+        className="discrete-fab"
+        onClick={() => setIsDiscrete(true)}
+        title="Mode discret (Ctrl+Shift+D)"
+      >
+        🫥
+      </button>
       <button className="emergency-fab" onClick={() => setShowEmergency(true)} title="Urgence">
         🆘
       </button>
@@ -98,6 +131,59 @@ export default function App() {
         {toasts.map(t => (
           <div key={t.id} className={`toast toast-${t.type}`}>{t.message}</div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Mode discret — fausse interface "Notes" ───────────────────────────────────
+function DiscreteMode({ onExit }) {
+  const [note, setNote] = useState('')
+  const lines = [
+    'Réunion lundi 9h — préparer les slides',
+    'Rappeler dentiste pour RDV',
+    'Acheter : lait, pain, tomates, pâtes',
+    'Lire chapitre 3 avant jeudi',
+  ]
+
+  return (
+    <div className="discrete-overlay" onClick={e => e.stopPropagation()}>
+      <div className="discrete-app">
+        <div className="discrete-toolbar">
+          <div className="discrete-title">📝 Notes</div>
+          <div className="discrete-toolbar-actions">
+            <button className="discrete-btn">Nouveau</button>
+            <button className="discrete-btn">Partager</button>
+            <button className="discrete-btn discrete-btn-back" onClick={onExit} title="Appuyer sur Échap pour revenir">
+              Retour
+            </button>
+          </div>
+        </div>
+        <div className="discrete-body">
+          <div className="discrete-sidebar">
+            <div className="discrete-note-item active">
+              <div className="discrete-note-title">Ma liste</div>
+              <div className="discrete-note-preview">Réunion lundi 9h…</div>
+            </div>
+            <div className="discrete-note-item">
+              <div className="discrete-note-title">Idées projet</div>
+              <div className="discrete-note-preview">Améliorer le site…</div>
+            </div>
+            <div className="discrete-note-item">
+              <div className="discrete-note-title">Recettes</div>
+              <div className="discrete-note-preview">Quiche lorraine…</div>
+            </div>
+          </div>
+          <div className="discrete-editor">
+            <div className="discrete-editor-header">Ma liste</div>
+            <textarea
+              className="discrete-textarea"
+              value={note || lines.join('\n')}
+              onChange={e => setNote(e.target.value)}
+              spellCheck={false}
+            />
+          </div>
+        </div>
       </div>
     </div>
   )

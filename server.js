@@ -199,6 +199,58 @@ function detectEmotion(text) {
 
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
+// ── Groq LLM (API gratuite) ───────────────────────────────────────────────────
+
+const ARIA_SYSTEM_PROMPT = `Tu es Aria, un assistant d'accompagnement psychologique bienveillant, calme et empathique.
+
+Rôle : écouter sans jugement, soutenir émotionnellement, proposer des techniques pratiques (respiration, ancrage, restructuration cognitive), orienter vers des professionnels si besoin.
+
+Règles absolues :
+- Tu n'es PAS un médecin ni un psychiatre — jamais de diagnostic définitif
+- En cas de risque suicidaire ou danger immédiat : mentionner TOUJOURS le 3114 (gratuit 24h/24) et le 15
+- Répondre UNIQUEMENT en français
+- Réponses courtes : 150-300 mots maximum
+- Terminer chaque réponse par une question ouverte de suivi
+- Ton calme, doux, non-culpabilisant, sans minimiser la souffrance
+
+Émotion détectée dans le message : {EMOTION}
+Niveau de risque (1=faible, 2=modéré, 3=critique) : {RISK}
+Éléments mémorisés sur la personne (utiliser pour personnaliser) : {MEMORY}`;
+
+async function callGroqAPI(apiKey, conversationHistory, emotion, memory) {
+  const memCtx = memory.slice(-5).map(m => `- ${m.content}`).join('\n') || '- Aucun contexte';
+  const systemPrompt = ARIA_SYSTEM_PROMPT
+    .replace('{EMOTION}', emotion.dominantLabel || 'Neutre')
+    .replace('{RISK}', emotion.riskLevel)
+    .replace('{MEMORY}', memCtx);
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...conversationHistory.slice(-14)
+  ];
+
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'llama-3.1-8b-instant',
+      messages,
+      temperature: 0.72,
+      max_tokens: 512
+    })
+  });
+
+  if (!resp.ok) {
+    const errText = await resp.text();
+    throw new Error(`Groq ${resp.status}: ${errText}`);
+  }
+  const data = await resp.json();
+  return data.choices[0].message.content;
+}
+
 const R = {
 
   welcome: [
@@ -403,22 +455,36 @@ app.get('/api/health', (req, res) => {
 });
 
 // POST /api/chat
-app.post('/api/chat', (req, res) => {
+app.post('/api/chat', async (req, res) => {
   const { message, conversationHistory = [] } = req.body;
   if (!message?.trim()) return res.status(400).json({ error: 'Message manquant' });
 
   const memory = readData('memory.json') || [];
+  const settings = readData('settings.json') || {};
   const emotion = detectEmotion(message);
 
-  // Premier message court → accueil
   const isFirst = conversationHistory.length === 0;
-  const response = (isFirst && message.trim().length < 30)
-    ? pick(R.welcome)
-    : generateResponse(message, emotion, conversationHistory);
+  let response;
+  let usedGroq = false;
+
+  // Groq si clé configurée et risque non critique (niveau 3 = réponses de crise pré-écrites)
+  if (settings.groqApiKey && emotion.riskLevel < 3 && !isFirst) {
+    try {
+      response = await callGroqAPI(settings.groqApiKey, conversationHistory, emotion, memory);
+      usedGroq = true;
+    } catch (err) {
+      console.warn('[Groq fallback]', err.message);
+      response = generateResponse(message, emotion, conversationHistory);
+    }
+  } else {
+    response = (isFirst && message.trim().length < 30)
+      ? pick(R.welcome)
+      : generateResponse(message, emotion, conversationHistory);
+  }
 
   // Persister
   const history = readData('history.json') || [];
-  history.push({ id: Date.now(), timestamp: new Date().toISOString(), userMessage: message, aiResponse: response, emotion });
+  history.push({ id: Date.now(), timestamp: new Date().toISOString(), userMessage: message, aiResponse: response, emotion, usedGroq });
   if (history.length > 200) history.splice(0, history.length - 200);
   writeData('history.json', history);
 
@@ -433,7 +499,8 @@ app.post('/api/chat', (req, res) => {
     response,
     emotion,
     suggestions: SUGGESTIONS[emotion.dominantEmotion] || SUGGESTIONS.neutre,
-    requiresEmergency: emotion.riskLevel >= 3
+    requiresEmergency: emotion.riskLevel >= 3,
+    usedGroq
   });
 });
 
@@ -547,6 +614,46 @@ app.post('/api/emergency', (req, res) => {
   writeData('emergencies.json', e);
   console.log('\n🆘 ALERTE URGENCE :', { type, timestamp: new Date().toISOString() });
   res.json({ success: true, message: 'Alerte enregistrée.' });
+});
+
+// GET /api/settings (masque la clé API)
+app.get('/api/settings', (req, res) => {
+  const s = readData('settings.json') || {};
+  res.json({
+    ...s,
+    groqApiKey: s.groqApiKey ? '•'.repeat(Math.max(0, s.groqApiKey.length - 4)) + s.groqApiKey.slice(-4) : ''
+  });
+});
+
+// POST /api/settings
+app.post('/api/settings', (req, res) => {
+  const { groqApiKey, ...rest } = req.body;
+  const s = readData('settings.json') || {};
+  if (groqApiKey !== undefined) {
+    const trimmed = groqApiKey.trim();
+    if (trimmed === '') delete s.groqApiKey;
+    else if (!trimmed.startsWith('•')) s.groqApiKey = trimmed;
+  }
+  Object.assign(s, rest);
+  writeData('settings.json', s);
+  res.json({ success: true });
+});
+
+// POST /api/settings/test-groq
+app.post('/api/settings/test-groq', async (req, res) => {
+  const { apiKey } = req.body;
+  if (!apiKey?.trim()) return res.status(400).json({ error: 'Clé manquante' });
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey.trim()}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'llama-3.1-8b-instant', messages: [{ role: 'user', content: 'Bonjour' }], max_tokens: 20 })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    res.json({ success: true, message: 'Connexion Groq réussie ✅' });
+  } catch (e) {
+    res.status(400).json({ error: 'Clé invalide ou Groq inaccessible.' });
+  }
 });
 
 // GET /api/export

@@ -320,10 +320,83 @@
   margin-bottom: 6px;
 }
 
+/* ── Groq API section ────────────────────────────────────────────────────── */
+.groq-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.groq-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.groq-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.groq-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.groq-status-badge {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--success-bg);
+  color: var(--success);
+  padding: 4px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  border: 1px solid #B0DDD4;
+}
+
+.groq-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.groq-input {
+  flex: 1;
+  min-width: 180px;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.groq-links {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.groq-link {
+  font-size: 13px;
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.groq-note {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .settings-content { padding: 16px; }
   .form-row { grid-template-columns: 1fr; }
   .emergency-numbers { grid-template-columns: repeat(2, 1fr); }
   .data-action-card { flex-direction: column; align-items: flex-start; }
+  .groq-input-row { flex-direction: column; align-items: stretch; }
 }
