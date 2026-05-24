@@ -1,0 +1,293 @@
+.emergency-modal {
+  max-width: 580px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.emergency-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.emergency-modal-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.emergency-modal-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── Breathing prompt ─────────────────────────────────────────────────────── */
+.breathing-prompt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--primary-bg);
+  border: 1px solid var(--primary-light);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 14px;
+}
+
+.breathing-prompt:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+}
+
+.breathing-prompt span:first-child { font-size: 22px; }
+
+.breathing-prompt strong { display: block; color: var(--text); font-weight: 600; }
+.breathing-prompt p { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+
+.prompt-arrow {
+  margin-left: auto;
+  color: var(--primary);
+  font-size: 16px;
+}
+
+/* ── Emergency section ───────────────────────────────────────────────────── */
+.emergency-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.emergency-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Hotlines ────────────────────────────────────────────────────────────── */
+.hotlines-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.hotline-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.hotline-card:hover {
+  background: var(--bg-card);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+
+.hotline-num {
+  font-size: 22px;
+  font-weight: 800;
+  min-width: 48px;
+}
+
+.hotline-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.hotline-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── Emergency contacts ──────────────────────────────────────────────────── */
+.emergency-contacts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.emergency-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.emergency-contact-item:hover {
+  background: var(--success-bg);
+  border-color: #B0DDD4;
+}
+
+.contact-avatar-em {
+  width: 36px;
+  height: 36px;
+  background: var(--primary-bg);
+  color: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.ec-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ec-phone {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.ec-call {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--success);
+}
+
+/* ── Alert button ────────────────────────────────────────────────────────── */
+.alert-all-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.alert-sent-banner {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid #B0DDD4;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.emergency-legal {
+  font-size: 12px;
+  color: var(--text-light);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ── Breathing exercise ──────────────────────────────────────────────────── */
+.breathing-exercise {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 0;
+}
+
+.breathing-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.breathing-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 320px;
+  line-height: 1.6;
+}
+
+.breathing-circle-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.breathing-circle {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 4px solid var(--primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: transform 4s ease, border-color 0.5s;
+}
+
+.breathing-phase {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.breathing-count {
+  font-size: 40px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+
+.breathing-cycles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.cycles-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.cycle-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.3s;
+}
+
+.cycle-dot.done {
+  background: var(--success);
+}
+
+.breathing-done {
+  background: var(--success-bg);
+  color: var(--success);
+  padding: 14px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .hotlines-grid { grid-template-columns: 1fr; }
+}

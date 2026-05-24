@@ -1,0 +1,114 @@
+[
+  {
+    "id": 1779657547864,
+    "timestamp": "2026-05-24T21:19:07.864Z",
+    "content": "je me sens très stressé par mon travail en ce moment, débordé de partout",
+    "emotion": "neutre",
+    "riskLevel": 1,
+    "auto": true
+  },
+  {
+    "id": 1779657547917,
+    "timestamp": "2026-05-24T21:19:07.917Z",
+    "content": "je suis très anxieux, attaque de panique ce matin",
+    "emotion": "anxiety",
+    "riskLevel": 2,
+    "auto": true
+  },
+  {
+    "id": 1779657642820,
+    "timestamp": "2026-05-24T21:20:42.820Z",
+    "content": "je me sens très stressé par mon travail, débordé de partout",
+    "emotion": "neutre",
+    "riskLevel": 1,
+    "auto": true
+  },
+  {
+    "id": 1779657642872,
+    "timestamp": "2026-05-24T21:20:42.872Z",
+    "content": "j'ai eu une attaque de panique ce matin, je suis très anxieuse",
+    "emotion": "anxiety",
+    "riskLevel": 2,
+    "auto": true
+  },
+  {
+    "id": 1779657642930,
+    "timestamp": "2026-05-24T21:20:42.930Z",
+    "content": "je suis triste depuis plusieurs jours, j'ai envie de pleurer tout le temps",
+    "emotion": "sadness",
+    "riskLevel": 1,
+    "auto": true
+  },
+  {
+    "id": 1779657642990,
+    "timestamp": "2026-05-24T21:20:42.990Z",
+    "content": "je me sens mieux aujourd'hui, bonne humeur !",
+    "emotion": "neutre",
+    "riskLevel": 1,
+    "auto": true
+  },
+  {
+    "id": 1779657660392,
+    "timestamp": "2026-05-24T21:21:00.392Z",
+    "content": "je me sens très stressé par mon travail, débordé de partout",
+    "emotion": "stress",
+    "riskLevel": 1,
+    "auto": true
+  },
+  {
+    "id": 1779657660440,
+    "timestamp": "2026-05-24T21:21:00.440Z",
+    "content": "je me sens mieux aujourd'hui, bonne humeur !",
+    "emotion": "neutre",
+    "riskLevel": 1,
+    "auto": true
+  },
+  {
+    "id": 1779657660468,
+    "timestamp": "2026-05-24T21:21:00.468Z",
+    "content": "je suis déprimée, plus de motivation, plus envie de rien",
+    "emotion": "severeDepression",
+    "riskLevel": 2,
+    "auto": true
+  },
+  {
+    "id": 1779657702748,
+    "timestamp": "2026-05-24T21:21:42.748Z",
+    "content": "je me sens très stressé par mon travail, débordé de partout",
+    "emotion": "stress",
+    "riskLevel": 1,
+    "auto": true
+  },
+  {
+    "id": 1779657702775,
+    "timestamp": "2026-05-24T21:21:42.775Z",
+    "content": "j'ai eu une attaque de panique ce matin, très anxieuse",
+    "emotion": "anxiety",
+    "riskLevel": 2,
+    "auto": true
+  },
+  {
+    "id": 1779657702800,
+    "timestamp": "2026-05-24T21:21:42.800Z",
+    "content": "je suis déprimée depuis des semaines, plus de motivation",
+    "emotion": "depression",
+    "riskLevel": 2,
+    "auto": true
+  },
+  {
+    "id": 1779657702826,
+    "timestamp": "2026-05-24T21:21:42.826Z",
+    "content": "je me sens seule, personne ne comprend ce que je vis",
+    "emotion": "isolation",
+    "riskLevel": 2,
+    "auto": true
+  },
+  {
+    "id": 1779657702850,
+    "timestamp": "2026-05-24T21:21:42.850Z",
+    "content": "je me sens mieux aujourd'hui, bonne humeur !",
+    "emotion": "positive",
+    "riskLevel": 1,
+    "auto": true
+  }
+]
