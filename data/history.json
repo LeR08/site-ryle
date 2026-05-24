@@ -1,0 +1,397 @@
+[
+  {
+    "id": 1779657547820,
+    "timestamp": "2026-05-24T21:19:07.820Z",
+    "userMessage": "bonjour",
+    "aiResponse": "Bonjour, je suis **Aria**, votre espace d'écoute bienveillant. 🌿\n\nJe suis là pour vous accompagner, sans jugement, à n'importe quelle heure. Vous pouvez me parler de ce qui vous traverse — une émotion, une situation, une pensée qui tourne en boucle.\n\nComment vous sentez-vous en ce moment ?",
+    "emotion": {
+      "dominantEmotion": "neutre",
+      "dominantLabel": "Neutre",
+      "detectedEmotions": [],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:19:07.820Z"
+    }
+  },
+  {
+    "id": 1779657547863,
+    "timestamp": "2026-05-24T21:19:07.863Z",
+    "userMessage": "je me sens très stressé par mon travail en ce moment, débordé de partout",
+    "aiResponse": "Pour mieux vous accompagner : comment vous sentez-vous émotionnellement ? Y a-t-il quelque chose qui vous pèse ou vous préoccupe ?",
+    "emotion": {
+      "dominantEmotion": "neutre",
+      "dominantLabel": "Neutre",
+      "detectedEmotions": [],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:19:07.863Z"
+    }
+  },
+  {
+    "id": 1779657547916,
+    "timestamp": "2026-05-24T21:19:07.916Z",
+    "userMessage": "je suis très anxieux, attaque de panique ce matin",
+    "aiResponse": "L'anxiété donne l'impression que tout est urgent et dangereux — alors que souvent, notre esprit amplifie la menace. Ce n'est pas de votre faute, c'est un mécanisme de survie qui s'emballe.\n\nEssayez l'ancrage sensoriel :\nNommez mentalement **5 choses** que vous voyez autour de vous en ce moment. Prenez le temps. Ça ramène dans le présent.\n\nQu'est-ce qui vous préoccupe concrètement là ?",
+    "emotion": {
+      "dominantEmotion": "anxiety",
+      "dominantLabel": "Anxiété",
+      "detectedEmotions": [
+        {
+          "key": "anxiety",
+          "label": "Anxiété",
+          "score": 4
+        }
+      ],
+      "riskScore": 4,
+      "riskLevel": 2,
+      "timestamp": "2026-05-24T21:19:07.916Z"
+    }
+  },
+  {
+    "id": 1779657642772,
+    "timestamp": "2026-05-24T21:20:42.772Z",
+    "userMessage": "bonjour",
+    "aiResponse": "Bonjour et bienvenue. Je suis **Aria**. 🌿\n\nMon rôle est simple : vous écouter, vous soutenir, et vous aider à traverser les moments difficiles — comme les moments plus sereins.\n\nComment allez-vous aujourd'hui ?",
+    "emotion": {
+      "dominantEmotion": "neutre",
+      "dominantLabel": "Neutre",
+      "detectedEmotions": [],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:20:42.772Z"
+    }
+  },
+  {
+    "id": 1779657642819,
+    "timestamp": "2026-05-24T21:20:42.819Z",
+    "userMessage": "je me sens très stressé par mon travail, débordé de partout",
+    "aiResponse": "Je suis attentive. Dites-moi — est-ce que quelque chose vous préoccupe, ou avez-vous juste envie de discuter ?",
+    "emotion": {
+      "dominantEmotion": "neutre",
+      "dominantLabel": "Neutre",
+      "detectedEmotions": [],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:20:42.819Z"
+    }
+  },
+  {
+    "id": 1779657642872,
+    "timestamp": "2026-05-24T21:20:42.872Z",
+    "userMessage": "j'ai eu une attaque de panique ce matin, je suis très anxieuse",
+    "aiResponse": "Je comprends cette sensation — l'anxiété peut être vraiment épuisante et envahissante.\n\nEssayons ensemble un exercice rapide :\n\n**Respiration 4-7-8 :**\n1. Inspirez par le nez — **4 secondes**\n2. Retenez — **7 secondes**\n3. Expirez lentement par la bouche — **8 secondes**\n\nRépétez 3 fois. Puis dites-moi : qu'est-ce qui déclenche cette anxiété en ce moment ?",
+    "emotion": {
+      "dominantEmotion": "anxiety",
+      "dominantLabel": "Anxiété",
+      "detectedEmotions": [
+        {
+          "key": "anxiety",
+          "label": "Anxiété",
+          "score": 4
+        }
+      ],
+      "riskScore": 4,
+      "riskLevel": 2,
+      "timestamp": "2026-05-24T21:20:42.871Z"
+    }
+  },
+  {
+    "id": 1779657642929,
+    "timestamp": "2026-05-24T21:20:42.929Z",
+    "userMessage": "je suis triste depuis plusieurs jours, j'ai envie de pleurer tout le temps",
+    "aiResponse": "Ce que vous traversez est douloureux, et votre tristesse est tout à fait légitime.\n\nÉcrire ce que vous ressentez, sans censure, peut aider — dans le journal ici, ou n'importe où. Ça met en forme ce qui est encore flou.\n\nQu'est-ce qui a déclenché cette tristesse ?",
+    "emotion": {
+      "dominantEmotion": "sadness",
+      "dominantLabel": "Tristesse",
+      "detectedEmotions": [
+        {
+          "key": "sadness",
+          "label": "Tristesse",
+          "score": 3
+        }
+      ],
+      "riskScore": 3,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:20:42.929Z"
+    }
+  },
+  {
+    "id": 1779657642989,
+    "timestamp": "2026-05-24T21:20:42.989Z",
+    "userMessage": "je me sens mieux aujourd'hui, bonne humeur !",
+    "aiResponse": "Je suis attentive. Dites-moi — est-ce que quelque chose vous préoccupe, ou avez-vous juste envie de discuter ?",
+    "emotion": {
+      "dominantEmotion": "neutre",
+      "dominantLabel": "Neutre",
+      "detectedEmotions": [
+        {
+          "key": "positive",
+          "label": "Positif",
+          "score": -1
+        }
+      ],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:20:42.989Z"
+    }
+  },
+  {
+    "id": 1779657660392,
+    "timestamp": "2026-05-24T21:21:00.392Z",
+    "userMessage": "je me sens très stressé par mon travail, débordé de partout",
+    "aiResponse": "Le stress chronique, c'est comme courir sans jamais toucher la ligne d'arrivée. Ça use profondément.\n\nQuestion importante : y a-t-il un moment dans votre journée, même court, où vous vous sentez un peu plus léger(e) ? Identifier ces moments aide à les construire consciemment.\n\nQu'est-ce qui vous a fait le plus de pression cette semaine ?",
+    "emotion": {
+      "dominantEmotion": "stress",
+      "dominantLabel": "Stress",
+      "detectedEmotions": [
+        {
+          "key": "stress",
+          "label": "Stress",
+          "score": 3
+        }
+      ],
+      "riskScore": 3,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:21:00.391Z"
+    }
+  },
+  {
+    "id": 1779657660440,
+    "timestamp": "2026-05-24T21:21:00.440Z",
+    "userMessage": "je me sens mieux aujourd'hui, bonne humeur !",
+    "aiResponse": "Parfois mettre des mots sur ce qu'on ressent prend du temps. Prenez celui qu'il vous faut.\n\nQu'est-ce qui vous a amené(e) ici aujourd'hui ?",
+    "emotion": {
+      "dominantEmotion": "neutre",
+      "dominantLabel": "Neutre",
+      "detectedEmotions": [
+        {
+          "key": "positive",
+          "label": "Positif",
+          "score": -1
+        }
+      ],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:21:00.440Z"
+    }
+  },
+  {
+    "id": 1779657660468,
+    "timestamp": "2026-05-24T21:21:00.468Z",
+    "userMessage": "je suis déprimée, plus de motivation, plus envie de rien",
+    "aiResponse": "Ce que vous décrivez — ce sentiment d'impasse, de vide — est une souffrance que je prends très au sérieux.\n\nVous méritez un soutien professionnel. Un psychologue peut vous aider à traverser ça d'une façon que je ne peux pas offrir seul(e).\n\nEn attendant, je suis là. Qu'est-ce qui vous pèse le plus en ce moment ?",
+    "emotion": {
+      "dominantEmotion": "severeDepression",
+      "dominantLabel": "Dépression sévère",
+      "detectedEmotions": [
+        {
+          "key": "severeDepression",
+          "label": "Dépression sévère",
+          "score": 7
+        },
+        {
+          "key": "depression",
+          "label": "Dépression",
+          "score": 5
+        }
+      ],
+      "riskScore": 7,
+      "riskLevel": 2,
+      "timestamp": "2026-05-24T21:21:00.467Z"
+    }
+  },
+  {
+    "id": 1779657660496,
+    "timestamp": "2026-05-24T21:21:00.496Z",
+    "userMessage": "j'ai envie de mourir",
+    "aiResponse": "Bonjour. Je m'appelle **Aria**, je suis votre assistant d'accompagnement psychologique. 🌿\n\nCet espace est le vôtre. Exprimez-vous librement — je suis là pour vous écouter sans vous juger, et vous accompagner du mieux possible.\n\nQu'est-ce qui vous amène aujourd'hui ?",
+    "emotion": {
+      "dominantEmotion": "danger",
+      "dominantLabel": "Danger critique",
+      "detectedEmotions": [
+        {
+          "key": "danger",
+          "label": "Danger critique",
+          "score": 10
+        }
+      ],
+      "riskScore": 10,
+      "riskLevel": 3,
+      "timestamp": "2026-05-24T21:21:00.496Z"
+    }
+  },
+  {
+    "id": 1779657702729,
+    "timestamp": "2026-05-24T21:21:42.729Z",
+    "userMessage": "bonjour",
+    "aiResponse": "Bonjour. Je m'appelle **Aria**, je suis votre assistant d'accompagnement psychologique. 🌿\n\nCet espace est le vôtre. Exprimez-vous librement — je suis là pour vous écouter sans vous juger, et vous accompagner du mieux possible.\n\nQu'est-ce qui vous amène aujourd'hui ?",
+    "emotion": {
+      "dominantEmotion": "neutre",
+      "dominantLabel": "Neutre",
+      "detectedEmotions": [],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:21:42.729Z"
+    }
+  },
+  {
+    "id": 1779657702748,
+    "timestamp": "2026-05-24T21:21:42.748Z",
+    "userMessage": "je me sens très stressé par mon travail, débordé de partout",
+    "aiResponse": "Le stress à ce niveau-là est épuisant. Votre corps est en alerte permanente.\n\nUne technique efficace : pendant 5 minutes, notez tout ce qui vous stresse sans filtre. Juste l'écrire suffit à désencombrer l'esprit.\n\nEnsuite : dans cette liste, y a-t-il des choses que vous pourriez déléguer, reporter, ou simplement laisser tomber ?",
+    "emotion": {
+      "dominantEmotion": "stress",
+      "dominantLabel": "Stress",
+      "detectedEmotions": [
+        {
+          "key": "stress",
+          "label": "Stress",
+          "score": 3
+        }
+      ],
+      "riskScore": 3,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:21:42.748Z"
+    }
+  },
+  {
+    "id": 1779657702775,
+    "timestamp": "2026-05-24T21:21:42.775Z",
+    "userMessage": "j'ai eu une attaque de panique ce matin, très anxieuse",
+    "aiResponse": "Je vous entends. Cette tension, ce sentiment que quelque chose va mal tourner… c'est éprouvant.\n\nMettez des mots précis sur ce qui angoisse — ça aide souvent à réduire son emprise. Votre cerveau génère des scénarios du pire par peur, pas des réalités.\n\nQu'est-ce qui vous préoccupe le plus en ce moment ?",
+    "emotion": {
+      "dominantEmotion": "anxiety",
+      "dominantLabel": "Anxiété",
+      "detectedEmotions": [
+        {
+          "key": "anxiety",
+          "label": "Anxiété",
+          "score": 4
+        }
+      ],
+      "riskScore": 4,
+      "riskLevel": 2,
+      "timestamp": "2026-05-24T21:21:42.775Z"
+    }
+  },
+  {
+    "id": 1779657702800,
+    "timestamp": "2026-05-24T21:21:42.800Z",
+    "userMessage": "je suis déprimée depuis des semaines, plus de motivation",
+    "aiResponse": "Je vous entends. Ce que vous traversez est réellement difficile, et c'est tout à fait humain de se sentir ainsi.\n\nLa dépression n'est pas une faiblesse — c'est quelque chose qui arrive à des personnes fortes, et qui mérite soin et attention.\n\nEst-ce que c'est quelque chose qui dure depuis longtemps, ou c'est plus récent pour vous ?",
+    "emotion": {
+      "dominantEmotion": "depression",
+      "dominantLabel": "Dépression",
+      "detectedEmotions": [
+        {
+          "key": "depression",
+          "label": "Dépression",
+          "score": 5
+        }
+      ],
+      "riskScore": 5,
+      "riskLevel": 2,
+      "timestamp": "2026-05-24T21:21:42.800Z"
+    }
+  },
+  {
+    "id": 1779657702825,
+    "timestamp": "2026-05-24T21:21:42.825Z",
+    "userMessage": "je me sens seule, personne ne comprend ce que je vis",
+    "aiResponse": "Je suis là avec vous. Vous n'êtes pas seul(e) en ce moment précis, même si ça peut sembler ainsi.\n\nCette sensation de ne pas être compris(e) — est-ce récent ou un sentiment de longue date ?\n\nMême un tout petit lien humain peut faire une grande différence : un sourire échangé, un message envoyé. Quel serait le plus petit pas possible pour vous aujourd'hui ?",
+    "emotion": {
+      "dominantEmotion": "isolation",
+      "dominantLabel": "Isolement",
+      "detectedEmotions": [
+        {
+          "key": "isolation",
+          "label": "Isolement",
+          "score": 5
+        }
+      ],
+      "riskScore": 5,
+      "riskLevel": 2,
+      "timestamp": "2026-05-24T21:21:42.825Z"
+    }
+  },
+  {
+    "id": 1779657702850,
+    "timestamp": "2026-05-24T21:21:42.850Z",
+    "userMessage": "je me sens mieux aujourd'hui, bonne humeur !",
+    "aiResponse": "Je suis sincèrement heureuse de vous entendre aller mieux. Ces moments sont précieux.\n\nÀ votre avis, qu'est-ce qui a contribué à ce que vous vous sentiez ainsi ? Identifier ces leviers vous permet de les activer consciemment.",
+    "emotion": {
+      "dominantEmotion": "positive",
+      "dominantLabel": "Positif",
+      "detectedEmotions": [
+        {
+          "key": "positive",
+          "label": "Positif",
+          "score": -1
+        }
+      ],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:21:42.850Z"
+    }
+  },
+  {
+    "id": 1779657702874,
+    "timestamp": "2026-05-24T21:21:42.874Z",
+    "userMessage": "je suis triste, envie de pleurer",
+    "aiResponse": "Je suis là. Vous n'avez pas à aller bien si vous n'allez pas bien.\n\nLa tristesse signale souvent quelque chose d'important — une perte, une déception, un manque. Elle mérite attention, pas minimisation.\n\nQu'est-ce qui vous manque en ce moment, au fond ?",
+    "emotion": {
+      "dominantEmotion": "sadness",
+      "dominantLabel": "Tristesse",
+      "detectedEmotions": [
+        {
+          "key": "sadness",
+          "label": "Tristesse",
+          "score": 3
+        }
+      ],
+      "riskScore": 3,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:21:42.874Z"
+    }
+  },
+  {
+    "id": 1779657702902,
+    "timestamp": "2026-05-24T21:21:42.902Z",
+    "userMessage": "je suis énervée, hors de moi",
+    "aiResponse": "Bonjour. Je m'appelle **Aria**, je suis votre assistant d'accompagnement psychologique. 🌿\n\nCet espace est le vôtre. Exprimez-vous librement — je suis là pour vous écouter sans vous juger, et vous accompagner du mieux possible.\n\nQu'est-ce qui vous amène aujourd'hui ?",
+    "emotion": {
+      "dominantEmotion": "anger",
+      "dominantLabel": "Colère",
+      "detectedEmotions": [
+        {
+          "key": "anger",
+          "label": "Colère",
+          "score": 3
+        }
+      ],
+      "riskScore": 3,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:21:42.902Z"
+    }
+  },
+  {
+    "id": 1779657702928,
+    "timestamp": "2026-05-24T21:21:42.928Z",
+    "userMessage": "j'ai envie de mourir, en finir avec tout",
+    "aiResponse": "Je vous entends profondément, et je veux que vous sachiez que je suis là avec vous dans ce moment.\n\nCe que vous traversez est une douleur immense — et elle mérite toute l'attention d'un professionnel.\n\n**Appelez maintenant :**\n- **3114** — Numéro national prévention suicide (gratuit, 24h/24, confidentiel)\n- **15** — SAMU si vous êtes en danger immédiat\n\nPouvez-vous m'assurer que vous êtes en sécurité là où vous êtes en ce moment ?",
+    "emotion": {
+      "dominantEmotion": "danger",
+      "dominantLabel": "Danger critique",
+      "detectedEmotions": [
+        {
+          "key": "danger",
+          "label": "Danger critique",
+          "score": 10
+        }
+      ],
+      "riskScore": 10,
+      "riskLevel": 3,
+      "timestamp": "2026-05-24T21:21:42.928Z"
+    }
+  }
+]

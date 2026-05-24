@@ -103,9 +103,7 @@ export default function ChatInterface({ onEmergency, showToast }) {
       const errMsg = {
         id: Date.now() + 1,
         role: 'assistant',
-        content: err.message.includes('API_KEY')
-          ? '⚠️ Le service n\'est pas encore configuré. Veuillez définir votre clé API Anthropic dans les variables d\'environnement.'
-          : '⚠️ Je rencontre une difficulté technique. Veuillez réessayer dans quelques instants.',
+        content: '⚠️ Je rencontre une difficulté technique. Veuillez réessayer dans quelques instants.',
         timestamp: new Date().toISOString(),
         isError: true
       }
