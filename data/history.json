@@ -393,5 +393,75 @@
       "riskLevel": 3,
       "timestamp": "2026-05-24T21:21:42.928Z"
     }
+  },
+  {
+    "id": 1779658584223,
+    "timestamp": "2026-05-24T21:36:24.223Z",
+    "userMessage": "je bois beaucoup",
+    "aiResponse": "Bonjour et bienvenue. Je suis **Aria**. 🌿\n\nMon rôle est simple : vous écouter, vous soutenir, et vous aider à traverser les moments difficiles — comme les moments plus sereins.\n\nComment allez-vous aujourd'hui ?",
+    "emotion": {
+      "dominantEmotion": "neutre",
+      "dominantLabel": "Neutre",
+      "detectedEmotions": [],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:36:24.208Z"
+    }
+  },
+  {
+    "id": 1779658630813,
+    "timestamp": "2026-05-24T21:37:10.813Z",
+    "userMessage": "je bois beaucoup",
+    "aiResponse": "Prenez le temps qu'il vous faut. Qu'est-ce qui vous préoccupe, vous pèse, ou vous traverse en ce moment ?",
+    "emotion": {
+      "dominantEmotion": "neutre",
+      "dominantLabel": "Neutre",
+      "detectedEmotions": [],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:37:10.813Z"
+    }
+  },
+  {
+    "id": 1779658739666,
+    "timestamp": "2026-05-24T21:38:59.666Z",
+    "userMessage": "je bois beaucoup",
+    "aiResponse": "Bonjour et bienvenue. Je suis **Aria**. 🌿\n\nMon rôle est simple : vous écouter, vous soutenir, et vous aider à traverser les moments difficiles — comme les moments plus sereins.\n\nComment allez-vous aujourd'hui ?",
+    "emotion": {
+      "dominantEmotion": "neutre",
+      "dominantLabel": "Neutre",
+      "detectedEmotions": [],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:38:59.665Z"
+    }
+  },
+  {
+    "id": 1779658739694,
+    "timestamp": "2026-05-24T21:38:59.694Z",
+    "userMessage": "je bois beaucoup",
+    "aiResponse": "Je suis là. Qu'est-ce qui se passe pour vous en ce moment ?",
+    "emotion": {
+      "dominantEmotion": "neutre",
+      "dominantLabel": "Neutre",
+      "detectedEmotions": [],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:38:59.693Z"
+    }
+  },
+  {
+    "id": 1779658775416,
+    "timestamp": "2026-05-24T21:39:35.416Z",
+    "userMessage": "je bois beaucoup",
+    "aiResponse": "Bonjour. Je m'appelle **Aria**, je suis votre assistant d'accompagnement psychologique. 🌿\n\nCet espace est le vôtre. Exprimez-vous librement — je suis là pour vous écouter sans vous juger, et vous accompagner du mieux possible.\n\nQu'est-ce qui vous amène aujourd'hui ?",
+    "emotion": {
+      "dominantEmotion": "neutre",
+      "dominantLabel": "Neutre",
+      "detectedEmotions": [],
+      "riskScore": 0,
+      "riskLevel": 1,
+      "timestamp": "2026-05-24T21:39:35.416Z"
+    }
   }
 ]
